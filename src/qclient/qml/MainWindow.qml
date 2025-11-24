@@ -20,4 +20,10 @@ ApplicationWindow {
             color: "#333333"
         }
     }
+
+    Component.onCompleted: {
+        console.log("semver", g_version.semver);
+        console.log("branch", g_version.branch);
+        console.log("commit", g_version.commit);
+    }
 }
