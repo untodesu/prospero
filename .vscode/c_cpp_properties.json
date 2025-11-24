@@ -11,6 +11,7 @@
                 "PROSPERO_STATIC"
             ],
             "includePath": [
+                "${env:QTDIR}/include/**",
                 "${workspaceFolder}/external/aes/include",
                 "${workspaceFolder}/external/ed25519/include",
                 "${workspaceFolder}/external/enet/include",
