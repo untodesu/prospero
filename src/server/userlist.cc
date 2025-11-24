@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Kirill Dmitrievich
 // File: userlist.cc; Created: Tue Nov 25 2025 00:39:32
 // Description: User access management
+
 #include "server/precompiled.hh"
 
 #include "server/userlist.hh"

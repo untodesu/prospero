@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2025 Kirill Dmitrievich
 // File: channels.hh; Created: Mon Nov 24 2025 23:54:28
-// Description: Server-side channel definitions
+// Description: Channel management
 
 #ifndef SERVER_CHANNELS_HH
 #define SERVER_CHANNELS_HH 1

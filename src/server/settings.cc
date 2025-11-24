@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2025 Kirill Dmitrievich
 // File: settings.cc; Created: Mon Nov 24 2025 23:25:57
-// Description: Server settings (server.conf)
+// Description: Server settings
 
 #include "server/precompiled.hh"
 

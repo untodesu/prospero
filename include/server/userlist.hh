@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Kirill Dmitrievich
 // File: userlist.hh; Created: Tue Nov 25 2025 00:37:47
 // Description: User access management
+
 #ifndef SERVER_USERLIST_HH
 #define SERVER_USERLIST_HH 1
 #pragma once

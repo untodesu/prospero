@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2025 Kirill Dmitrievich
 // File: crc64ecma.cc; Created: Mon Nov 24 2025 22:16:52
-// Description: ECMA-182 CRC-64 implementation
+// Description: ECMA-182 CRC-64
 
 #include "core/precompiled.hh"
 

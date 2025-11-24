@@ -2,6 +2,7 @@
 // Copyright (c) 2025 Kirill Dmitrievich
 // File: buffer.hh; Created: Mon Nov 24 2025 22:59:32
 // Description: QDataStream-esque buffer for de-/serializing data
+
 #ifndef CORE_BUFFER_HH
 #define CORE_BUFFER_HH 1
 #pragma once

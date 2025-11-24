@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2025 Kirill Dmitrievich
 // File: ed25519.hh; Created: Mon Nov 24 2025 22:32:01
-// Description: libed25519 wrapper so nothing else depends on it
+// Description: libed25519 wrapper so only core.dll depends on it
 
 #ifndef CORE_ED25519_HH
 #define CORE_ED25519_HH 1

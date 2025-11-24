@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2025 Kirill Dmitrievich
 // File: host.cc; Created: Tue Nov 25 2025 00:44:38
-// Description: Server host management
+// Description: Network management
 
 #include "server/precompiled.hh"
 

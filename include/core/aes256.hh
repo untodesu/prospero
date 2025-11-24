@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2025 Kirill Dmitrievich
 // File: aes256.hh; Created: Mon Nov 24 2025 22:51:26
-// Description: AES-256 implementation so nothing else depends on libaes
+// Description: libaes wrapper so only core.dll depends on it
 
 #ifndef CORE_AES256_HH
 #define CORE_AES256_HH 1

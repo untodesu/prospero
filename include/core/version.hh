@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2025 Kirill Dmitrievich
 // File: version.hh; Created: Mon Nov 24 2025 22:19:23
-// Description: Project version information
+// Description: Version information
 
 #ifndef CORE_VERSION_HH
 #define CORE_VERSION_HH 1
