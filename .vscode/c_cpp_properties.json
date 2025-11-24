@@ -1,0 +1,24 @@
+{
+    "version": 4,
+    "configurations": [
+        {
+            "name": "Prospero",
+            "cppStandard": "c++20",
+            "defines": [
+                "_CRT_SECURE_NO_WARNINGS",
+                "_CRT_NONSTDC_NO_WARNINGS",
+                "NOMINMAX",
+                "PROSPERO_STATIC"
+            ],
+            "includePath": [
+                "${workspaceFolder}/external/aes/include",
+                "${workspaceFolder}/external/ed25519/include",
+                "${workspaceFolder}/external/enet/include",
+                "${workspaceFolder}/external/uulog/include",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/src",
+                "${default}"
+            ]
+        }
+    ]
+}

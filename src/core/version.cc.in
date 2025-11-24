@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: MPL-2.0
+// Copyright (c) 2025 Kirill Dmitrievich
+// File: version.cc.in; Created: Mon Nov 24 2025 22:20:33
+// Description: Version information source file.
+
+#include "core/precompiled.hh"
+
+#include "core/version.hh"
+
+// clang-format off
+CORE_API const unsigned int core::version_major = ${PROJECT_VERSION_MAJOR};
+CORE_API const unsigned int core::version_minor = ${PROJECT_VERSION_MINOR};
+CORE_API const unsigned int core::version_patch = ${PROJECT_VERSION_PATCH};
+// clang-format on
+
+CORE_API const std::string_view core::version_branch = "${GIT_BRANCH}";
+CORE_API const std::string_view core::version_commit = "${GIT_COMMIT}";
+CORE_API const std::string_view core::version_semver = "${PROJECT_VERSION}";
