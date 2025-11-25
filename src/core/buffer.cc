@@ -10,36 +10,36 @@
 #include "core/aes256.hh"
 #include "core/ed25519.hh"
 
-CORE_API core::ReadBuffer::ReadBuffer(const ReadBuffer& other)
+ReadBuffer::ReadBuffer(const ReadBuffer& other)
 {
     reset(other.data(), other.size());
 }
 
-CORE_API core::ReadBuffer::ReadBuffer(const void* data, std::size_t size)
+ReadBuffer::ReadBuffer(const void* data, std::size_t size)
 {
     assert(data);
 
     reset(data, size);
 }
 
-CORE_API core::ReadBuffer::ReadBuffer(std::istream& stream)
+ReadBuffer::ReadBuffer(std::istream& stream)
 {
     assert(stream.good());
 
     reset(stream);
 }
 
-CORE_API std::size_t core::ReadBuffer::size(void) const
+std::size_t ReadBuffer::size(void) const
 {
     return m_vector.size();
 }
 
-CORE_API const std::byte* core::ReadBuffer::data(void) const
+const std::byte* ReadBuffer::data(void) const
 {
     return m_vector.data();
 }
 
-CORE_API void core::ReadBuffer::reset(const void* data, std::size_t size)
+void ReadBuffer::reset(const void* data, std::size_t size)
 {
     assert(data);
 
@@ -48,7 +48,7 @@ CORE_API void core::ReadBuffer::reset(const void* data, std::size_t size)
     m_position = 0U;
 }
 
-CORE_API void core::ReadBuffer::reset(std::istream& stream)
+void ReadBuffer::reset(std::istream& stream)
 {
     assert(stream.good());
 
@@ -62,7 +62,7 @@ CORE_API void core::ReadBuffer::reset(std::istream& stream)
 }
 
 template<>
-CORE_API std::byte core::ReadBuffer::read<std::byte>(void)
+std::byte ReadBuffer::read<std::byte>(void)
 {
     if(m_position < m_vector.size()) {
         auto result = m_vector[m_position];
@@ -75,7 +75,7 @@ CORE_API std::byte core::ReadBuffer::read<std::byte>(void)
 }
 
 template<>
-CORE_API std::uint8_t core::ReadBuffer::read<std::uint8_t>(void)
+std::uint8_t ReadBuffer::read<std::uint8_t>(void)
 {
     if((m_position + 1U) <= m_vector.size()) {
         auto result = static_cast<std::uint8_t>(m_vector[m_position]);
@@ -88,7 +88,7 @@ CORE_API std::uint8_t core::ReadBuffer::read<std::uint8_t>(void)
 }
 
 template<>
-CORE_API std::uint16_t core::ReadBuffer::read<std::uint16_t>(void)
+std::uint16_t ReadBuffer::read<std::uint16_t>(void)
 {
     if((m_position + 2U) <= m_vector.size()) {
         auto result = UINT16_C(0x0000);
@@ -103,7 +103,7 @@ CORE_API std::uint16_t core::ReadBuffer::read<std::uint16_t>(void)
 }
 
 template<>
-CORE_API std::uint32_t core::ReadBuffer::read<std::uint32_t>(void)
+std::uint32_t ReadBuffer::read<std::uint32_t>(void)
 {
     if((m_position + 4U) <= m_vector.size()) {
         auto result = UINT32_C(0x00000000);
@@ -120,7 +120,7 @@ CORE_API std::uint32_t core::ReadBuffer::read<std::uint32_t>(void)
 }
 
 template<>
-CORE_API std::uint64_t core::ReadBuffer::read<std::uint64_t>(void)
+std::uint64_t ReadBuffer::read<std::uint64_t>(void)
 {
     if((m_position + 8U) <= m_vector.size()) {
         auto result = UINT64_C(0x0000000000000000);
@@ -141,37 +141,37 @@ CORE_API std::uint64_t core::ReadBuffer::read<std::uint64_t>(void)
 }
 
 template<>
-CORE_API float core::ReadBuffer::read<float>(void)
+float ReadBuffer::read<float>(void)
 {
     return std::bit_cast<float>(read<std::uint32_t>());
 }
 
 template<>
-CORE_API std::int8_t core::ReadBuffer::read<std::int8_t>(void)
+std::int8_t ReadBuffer::read<std::int8_t>(void)
 {
     return std::bit_cast<std::int8_t>(read<std::uint8_t>());
 }
 
 template<>
-CORE_API std::int16_t core::ReadBuffer::read<std::int16_t>(void)
+std::int16_t ReadBuffer::read<std::int16_t>(void)
 {
     return std::bit_cast<std::int16_t>(read<std::uint16_t>());
 }
 
 template<>
-CORE_API std::int32_t core::ReadBuffer::read<std::int32_t>(void)
+std::int32_t ReadBuffer::read<std::int32_t>(void)
 {
     return std::bit_cast<std::int32_t>(read<std::uint32_t>());
 }
 
 template<>
-CORE_API std::int64_t core::ReadBuffer::read<std::int64_t>(void)
+std::int64_t ReadBuffer::read<std::int64_t>(void)
 {
     return std::bit_cast<std::int64_t>(read<std::uint64_t>());
 }
 
 template<>
-CORE_API std::string core::ReadBuffer::read<std::string>(void)
+std::string ReadBuffer::read<std::string>(void)
 {
     std::string result;
     result.resize(read<std::uint16_t>());
@@ -187,7 +187,7 @@ CORE_API std::string core::ReadBuffer::read<std::string>(void)
     return result;
 }
 
-CORE_API void core::ReadBuffer::read(void* buffer, std::size_t size)
+void ReadBuffer::read(void* buffer, std::size_t size)
 {
     auto bytes = reinterpret_cast<std::byte*>(buffer);
     auto amount_to_read = std::min(size, m_vector.size() - m_position);
@@ -199,49 +199,49 @@ CORE_API void core::ReadBuffer::read(void* buffer, std::size_t size)
     m_position += size;
 }
 
-CORE_API core::ReadBuffer core::ReadBuffer::decrypt(core::aes256::context& context, ReadBuffer& buffer)
+ReadBuffer ReadBuffer::decrypt(aes256::context& context, ReadBuffer& buffer)
 {
-    core::aes256::ivec_buffer ivec;
+    aes256::ivec_buffer ivec;
     buffer.read(ivec.data(), ivec.size());
 
     std::vector<std::byte> payload;
     payload.resize(buffer.read<std::uint32_t>());
     buffer.read(payload.data(), payload.size());
 
-    assert(buffer.size() % core::aes256::BLOCK_SIZE == 0U);
+    assert(payload.size() % aes256::BLOCK_SIZE == 0U);
 
-    core::aes256::set_ivec(context, ivec);
-    core::aes256::decrypt_insitu(context, payload);
+    aes256::set_ivec(context, ivec);
+    aes256::decrypt_insitu(context, payload);
 
-    return core::ReadBuffer(payload.data(), payload.size());
+    return ReadBuffer(payload.data(), payload.size());
 }
 
-CORE_API core::WriteBuffer::WriteBuffer(const WriteBuffer& other)
+WriteBuffer::WriteBuffer(const WriteBuffer& other)
 {
     m_vector = other.m_vector;
 }
 
-CORE_API std::size_t core::WriteBuffer::size(void) const
+std::size_t WriteBuffer::size(void) const
 {
     return m_vector.size();
 }
 
-CORE_API const std::byte* core::WriteBuffer::data(void) const
+const std::byte* WriteBuffer::data(void) const
 {
     return m_vector.data();
 }
 
-CORE_API void core::WriteBuffer::reset(void)
+void WriteBuffer::reset(void)
 {
     m_vector.clear();
 }
 
-CORE_API void core::WriteBuffer::write(const WriteBuffer& other)
+void WriteBuffer::write(const WriteBuffer& other)
 {
     m_vector.insert(m_vector.end(), other.m_vector.begin(), other.m_vector.end());
 }
 
-CORE_API void core::WriteBuffer::write(const void* data, std::size_t size)
+void WriteBuffer::write(const void* data, std::size_t size)
 {
     assert(data);
 
@@ -250,26 +250,26 @@ CORE_API void core::WriteBuffer::write(const void* data, std::size_t size)
 }
 
 template<>
-CORE_API void core::WriteBuffer::write<std::byte>(const std::byte value)
+void WriteBuffer::write<std::byte>(const std::byte value)
 {
     m_vector.push_back(value);
 }
 
 template<>
-CORE_API void core::WriteBuffer::write<std::uint8_t>(const std::uint8_t value)
+void WriteBuffer::write<std::uint8_t>(const std::uint8_t value)
 {
     m_vector.push_back(static_cast<std::byte>(value));
 }
 
 template<>
-CORE_API void core::WriteBuffer::write<std::uint16_t>(const std::uint16_t value)
+void WriteBuffer::write<std::uint16_t>(const std::uint16_t value)
 {
     m_vector.push_back(static_cast<std::byte>(UINT16_C(0xFF) & ((value & UINT16_C(0xFF00)) >> 8U)));
     m_vector.push_back(static_cast<std::byte>(UINT16_C(0xFF) & ((value & UINT16_C(0x00FF)) >> 0U)));
 }
 
 template<>
-CORE_API void core::WriteBuffer::write<std::uint32_t>(const std::uint32_t value)
+void WriteBuffer::write<std::uint32_t>(const std::uint32_t value)
 {
     m_vector.push_back(static_cast<std::byte>(UINT32_C(0xFF) & ((value & UINT32_C(0xFF000000)) >> 24U)));
     m_vector.push_back(static_cast<std::byte>(UINT32_C(0xFF) & ((value & UINT32_C(0x00FF0000)) >> 16U)));
@@ -278,7 +278,7 @@ CORE_API void core::WriteBuffer::write<std::uint32_t>(const std::uint32_t value)
 }
 
 template<>
-CORE_API void core::WriteBuffer::write<std::uint64_t>(const std::uint64_t value)
+void WriteBuffer::write<std::uint64_t>(const std::uint64_t value)
 {
     m_vector.push_back(static_cast<std::byte>(UINT64_C(0xFF) & ((value & UINT64_C(0xFF00000000000000)) >> 56U)));
     m_vector.push_back(static_cast<std::byte>(UINT64_C(0xFF) & ((value & UINT64_C(0x00FF000000000000)) >> 48U)));
@@ -291,37 +291,37 @@ CORE_API void core::WriteBuffer::write<std::uint64_t>(const std::uint64_t value)
 }
 
 template<>
-CORE_API void core::WriteBuffer::write(const float value)
+void WriteBuffer::write(const float value)
 {
     write(std::bit_cast<std::uint32_t>(value));
 }
 
 template<>
-CORE_API void core::WriteBuffer::write(const std::int8_t value)
+void WriteBuffer::write(const std::int8_t value)
 {
     write(std::bit_cast<std::uint8_t>(value));
 }
 
 template<>
-CORE_API void core::WriteBuffer::write(const std::int16_t value)
+void WriteBuffer::write(const std::int16_t value)
 {
     write(std::bit_cast<std::uint16_t>(value));
 }
 
 template<>
-CORE_API void core::WriteBuffer::write(const std::int32_t value)
+void WriteBuffer::write(const std::int32_t value)
 {
     write(std::bit_cast<std::uint32_t>(value));
 }
 
 template<>
-CORE_API void core::WriteBuffer::write(const std::int64_t value)
+void WriteBuffer::write(const std::int64_t value)
 {
     write(std::bit_cast<std::uint64_t>(value));
 }
 
 template<>
-CORE_API void core::WriteBuffer::write<std::string_view>(const std::string_view value)
+void WriteBuffer::write<std::string_view>(const std::string_view value)
 {
     write<std::uint16_t>(static_cast<std::uint16_t>(value.size()));
 
@@ -330,29 +330,31 @@ CORE_API void core::WriteBuffer::write<std::string_view>(const std::string_view 
     }
 }
 
-CORE_API void core::WriteBuffer::to_stream(std::ostream& stream) const
+void WriteBuffer::to_stream(std::ostream& stream) const
 {
     assert(stream.good());
 
     stream.write(reinterpret_cast<const char*>(m_vector.data()), static_cast<std::streamsize>(m_vector.size()));
 }
 
-CORE_API core::WriteBuffer core::WriteBuffer::encrypt(core::aes256::context& context, const core::WriteBuffer& buffer)
+WriteBuffer WriteBuffer::encrypt(aes256::context& context, const WriteBuffer& buffer)
 {
-    core::ed25519::seed_buffer seed;
-    core::ed25519::generate_seed(seed);
+    ed25519::seed_buffer seed;
+    ed25519::generate_seed(seed);
 
-    core::aes256::ivec_buffer ivec;
+    aes256::ivec_buffer ivec;
     std::copy(seed.begin(), seed.begin() + ivec.size(), ivec.begin());
 
     std::vector<std::byte> payload;
     payload.insert(payload.begin(), buffer.data(), buffer.data() + buffer.size());
     payload.resize(((payload.size() / AES_BLOCKLEN) + 1) * AES_BLOCKLEN, static_cast<std::byte>(0));
 
-    core::aes256::set_ivec(context, ivec);
-    core::aes256::encrypt_insitu(context, payload);
+    assert(payload.size() % aes256::BLOCK_SIZE == 0U);
 
-    core::WriteBuffer output;
+    aes256::set_ivec(context, ivec);
+    aes256::encrypt_insitu(context, payload);
+
+    WriteBuffer output;
     output.write(ivec.data(), ivec.size());
     output.write<std::uint32_t>(static_cast<std::uint32_t>(payload.size()));
     output.write(payload.data(), payload.size());

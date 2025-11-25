@@ -7,11 +7,10 @@
 
 #include "core/config.hh"
 
-#include "core/concepts.hh"
-#include "core/string.hh"
+#include "core/strtools.hh"
 
 template<std::unsigned_integral T>
-static T config_value_autobase(const core::Config* config, const std::string& key, T default_value)
+static T config_value_autobase(const Config* config, const std::string& key, T default_value)
 {
     auto it = config->find(std::string(key));
 
@@ -41,8 +40,9 @@ static T config_value_autobase(const core::Config* config, const std::string& ke
     return default_value;
 }
 
-template<core::arithmetic T>
-static T config_value_arithmetic(const core::Config* config, const std::string& key, T default_value)
+template<typename T>
+requires std::is_arithmetic_v<T>
+static T config_value_arithmetic(const Config* config, const std::string& key, T default_value)
 {
     auto it = config->find(std::string(key));
 
@@ -60,17 +60,17 @@ static T config_value_arithmetic(const core::Config* config, const std::string& 
     return default_value;
 }
 
-CORE_API core::Config::Config(std::istream& stream)
+Config::Config(std::istream& stream)
 {
     read(stream);
 }
 
-CORE_API core::Config::Config(const std::filesystem::path& path)
+Config::Config(const std::filesystem::path& path)
 {
     read(path);
 }
 
-CORE_API void core::Config::read(std::istream& stream, bool append)
+void Config::read(std::istream& stream, bool append)
 {
     assert(stream.good());
 
@@ -85,13 +85,13 @@ CORE_API void core::Config::read(std::istream& stream, bool append)
         auto comment = line.find_first_of('#');
 
         if(comment == std::string::npos) {
-            kv_string = core::trim_whitespace(line);
+            kv_string = strtools::trim_whitespace(line);
         }
         else {
-            kv_string = core::trim_whitespace(line.substr(0, comment));
+            kv_string = strtools::trim_whitespace(line.substr(0, comment));
         }
 
-        if(core::is_whitespace(kv_string)) {
+        if(strtools::is_whitespace(kv_string)) {
             // Ignore empty or commented out lines
             continue;
         }
@@ -105,14 +105,14 @@ CORE_API void core::Config::read(std::istream& stream, bool append)
         auto kv_name = kv_string.substr(0, separator);
         auto kv_value = kv_string.substr(separator + 1);
 
-        kv_name = core::trim_whitespace(kv_name);
-        kv_value = core::trim_whitespace(kv_value);
+        kv_name = strtools::trim_whitespace(kv_name);
+        kv_value = strtools::trim_whitespace(kv_value);
 
         this->insert_or_assign(std::string(kv_name), std::string(kv_value));
     }
 }
 
-CORE_API bool core::Config::read(const std::filesystem::path& path, bool append)
+bool Config::read(const std::filesystem::path& path, bool append)
 {
     std::ifstream stream(path, std::ios::in);
 
@@ -124,7 +124,7 @@ CORE_API bool core::Config::read(const std::filesystem::path& path, bool append)
     return false;
 }
 
-CORE_API void core::Config::write(std::ostream& stream) const
+void Config::write(std::ostream& stream) const
 {
     assert(stream.good());
 
@@ -140,7 +140,7 @@ CORE_API void core::Config::write(std::ostream& stream) const
     }
 }
 
-CORE_API bool core::Config::write(const std::filesystem::path& path) const
+bool Config::write(const std::filesystem::path& path) const
 {
     std::ofstream stream(path, std::ios::out | std::ios::trunc);
 
@@ -153,79 +153,79 @@ CORE_API bool core::Config::write(const std::filesystem::path& path) const
 }
 
 template<>
-CORE_API unsigned char core::Config::value<unsigned char>(std::string_view key, unsigned char default_value) const
+unsigned char Config::value<unsigned char>(std::string_view key, unsigned char default_value) const
 {
     return config_value_autobase(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API unsigned short core::Config::value<unsigned short>(std::string_view key, unsigned short default_value) const
+unsigned short Config::value<unsigned short>(std::string_view key, unsigned short default_value) const
 {
     return config_value_autobase(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API unsigned int core::Config::value<unsigned int>(std::string_view key, unsigned int default_value) const
+unsigned int Config::value<unsigned int>(std::string_view key, unsigned int default_value) const
 {
     return config_value_autobase(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API unsigned long core::Config::value<unsigned long>(std::string_view key, unsigned long default_value) const
+unsigned long Config::value<unsigned long>(std::string_view key, unsigned long default_value) const
 {
     return config_value_autobase(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API unsigned long long core::Config::value<unsigned long long>(std::string_view key, unsigned long long default_value) const
+unsigned long long Config::value<unsigned long long>(std::string_view key, unsigned long long default_value) const
 {
     return config_value_autobase(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API char core::Config::value<char>(std::string_view key, char default_value) const
+char Config::value<char>(std::string_view key, char default_value) const
 {
     return static_cast<char>(config_value_arithmetic(this, std::string(key), static_cast<int>(default_value)));
 }
 
 template<>
-CORE_API short core::Config::value<short>(std::string_view key, short default_value) const
+short Config::value<short>(std::string_view key, short default_value) const
 {
     return config_value_arithmetic(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API int core::Config::value<int>(std::string_view key, int default_value) const
+int Config::value<int>(std::string_view key, int default_value) const
 {
     return config_value_arithmetic(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API long core::Config::value<long>(std::string_view key, long default_value) const
+long Config::value<long>(std::string_view key, long default_value) const
 {
     return config_value_arithmetic(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API long long core::Config::value<long long>(std::string_view key, long long default_value) const
+long long Config::value<long long>(std::string_view key, long long default_value) const
 {
     return config_value_arithmetic(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API float core::Config::value<float>(std::string_view key, float default_value) const
+float Config::value<float>(std::string_view key, float default_value) const
 {
     return config_value_arithmetic(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API double core::Config::value<double>(std::string_view key, double default_value) const
+double Config::value<double>(std::string_view key, double default_value) const
 {
     return config_value_arithmetic(this, std::string(key), default_value);
 }
 
 template<>
-CORE_API std::string_view core::Config::value<std::string_view>(std::string_view key, std::string_view default_value) const
+std::string_view Config::value<std::string_view>(std::string_view key, std::string_view default_value) const
 {
     auto it = this->find(std::string(key));
 
@@ -237,79 +237,79 @@ CORE_API std::string_view core::Config::value<std::string_view>(std::string_view
 }
 
 template<>
-CORE_API void core::Config::set_value<unsigned char>(std::string_view key, unsigned char value)
+void Config::set_value<unsigned char>(std::string_view key, unsigned char value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<unsigned short>(std::string_view key, unsigned short value)
+void Config::set_value<unsigned short>(std::string_view key, unsigned short value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<unsigned int>(std::string_view key, unsigned int value)
+void Config::set_value<unsigned int>(std::string_view key, unsigned int value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<unsigned long>(std::string_view key, unsigned long value)
+void Config::set_value<unsigned long>(std::string_view key, unsigned long value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<unsigned long long>(std::string_view key, unsigned long long value)
+void Config::set_value<unsigned long long>(std::string_view key, unsigned long long value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<char>(std::string_view key, char value)
+void Config::set_value<char>(std::string_view key, char value)
 {
     this->insert_or_assign(std::string(key), std::to_string(static_cast<int>(value)));
 }
 
 template<>
-CORE_API void core::Config::set_value<short>(std::string_view key, short value)
+void Config::set_value<short>(std::string_view key, short value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<int>(std::string_view key, int value)
+void Config::set_value<int>(std::string_view key, int value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<long>(std::string_view key, long value)
+void Config::set_value<long>(std::string_view key, long value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<long long>(std::string_view key, long long value)
+void Config::set_value<long long>(std::string_view key, long long value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<float>(std::string_view key, float value)
+void Config::set_value<float>(std::string_view key, float value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<double>(std::string_view key, double value)
+void Config::set_value<double>(std::string_view key, double value)
 {
     this->insert_or_assign(std::string(key), std::to_string(value));
 }
 
 template<>
-CORE_API void core::Config::set_value<std::string_view>(std::string_view key, std::string_view value)
+void Config::set_value<std::string_view>(std::string_view key, std::string_view value)
 {
     this->insert_or_assign(std::string(key), std::string(value));
 }

@@ -8,11 +8,11 @@
 #include "core/version.hh"
 
 // clang-format off
-CORE_API const unsigned int core::version_major = ${PROJECT_VERSION_MAJOR};
-CORE_API const unsigned int core::version_minor = ${PROJECT_VERSION_MINOR};
-CORE_API const unsigned int core::version_patch = ${PROJECT_VERSION_PATCH};
+const unsigned int version::major = ${PROJECT_VERSION_MAJOR};
+const unsigned int version::minor = ${PROJECT_VERSION_MINOR};
+const unsigned int version::patch = ${PROJECT_VERSION_PATCH};
 // clang-format on
 
-CORE_API const std::string_view core::version_branch = "${GIT_BRANCH}";
-CORE_API const std::string_view core::version_commit = "${GIT_COMMIT}";
-CORE_API const std::string_view core::version_semver = "${PROJECT_VERSION}";
+const std::string_view version::branch = "${GIT_BRANCH}";
+const std::string_view version::commit = "${GIT_COMMIT}";
+const std::string_view version::semver = "${PROJECT_VERSION}";

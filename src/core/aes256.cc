@@ -7,9 +7,9 @@
 
 #include "core/aes256.hh"
 
-CORE_API void core::aes256::create(context& context, const skey_buffer& key)
+void aes256::create(context& context, const skey_buffer& key)
 {
-    assert(context);
+    assert(context == nullptr);
 
     auto aes_context = new AES_ctx;
     auto key_ptr = reinterpret_cast<const uint8_t*>(key.data());
@@ -19,18 +19,18 @@ CORE_API void core::aes256::create(context& context, const skey_buffer& key)
     context = reinterpret_cast<void*>(aes_context);
 }
 
-CORE_API void core::aes256::destroy(context& context)
+void aes256::destroy(context& context)
 {
-    assert(context);
+    if(context) {
+        auto aes_context = reinterpret_cast<AES_ctx*>(context);
 
-    auto aes_context = reinterpret_cast<AES_ctx*>(context);
+        delete aes_context;
 
-    delete aes_context;
-
-    context = nullptr;
+        context = nullptr;
+    }
 }
 
-CORE_API void core::aes256::set_ivec(context& context, const ivec_buffer& ivec)
+void aes256::set_ivec(context& context, const ivec_buffer& ivec)
 {
     assert(context);
 
@@ -40,7 +40,7 @@ CORE_API void core::aes256::set_ivec(context& context, const ivec_buffer& ivec)
     AES_ctx_set_iv(aes_context, ivec_ptr);
 }
 
-CORE_API void core::aes256::encrypt_insitu(context& context, std::span<std::byte> data)
+void aes256::encrypt_insitu(context& context, std::span<std::byte> data)
 {
     assert(context);
     assert(data.size_bytes() % BLOCK_SIZE == 0U);
@@ -51,7 +51,7 @@ CORE_API void core::aes256::encrypt_insitu(context& context, std::span<std::byte
     AES_CBC_encrypt_buffer(aes_context, data_ptr, data.size_bytes());
 }
 
-CORE_API void core::aes256::decrypt_insitu(context& context, std::span<std::byte> data)
+void aes256::decrypt_insitu(context& context, std::span<std::byte> data)
 {
     assert(context);
     assert(data.size_bytes() % BLOCK_SIZE == 0U);

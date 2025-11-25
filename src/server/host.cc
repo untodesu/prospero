@@ -7,7 +7,6 @@
 
 #include "server/host.hh"
 
-#include "core/buffer.hh"
 #include "core/exception.hh"
 #include "core/protocol.hh"
 
@@ -25,13 +24,13 @@ void host::init(void)
     address.host = ENET_HOST_ANY;
     address.port = settings::host::udp_port;
 
-    enet_host = enet_host_create(&address, settings::host::max_peers, 2U, 0U, 0U);
+    enet_host = enet_host_create(&address, settings::host::max_peers, PROTOCOL_MAXCHAN, 0U, 0U);
 
     if(enet_host == nullptr) {
         throw core::runtime_error("failed to create a server host");
     }
 
-    LOG_INFO("server listening on ENET_HOST_ANY:{}", settings::host::udp_port);
+    LOG_INFO("server listening on UDP port {}", settings::host::udp_port);
 }
 
 void host::shutdown(void)
@@ -55,7 +54,7 @@ void host::update(void)
                 break;
 
             case ENET_EVENT_TYPE_RECEIVE:
-                sessions::update(event.peer, event.packet);
+                sessions::update(event.peer, event.packet, event.channelID);
                 enet_packet_destroy(event.packet);
                 break;
         }

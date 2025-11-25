@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 {
     uulog::add_sink(&uulog::builtin::stderr_ansi);
 
-    LOG_INFO("prospero server {}", core::version_semver);
+    LOG_INFO("prospero server {}", version::semver);
 
     try {
         auto enet_check = enet_initialize();

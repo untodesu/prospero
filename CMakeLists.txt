@@ -6,8 +6,6 @@
 cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 project(Prospero VERSION 0.0.1 LANGUAGES C CXX)
 
-option(PROSPERO_STATIC "Build Prospero binaries as singular static executables" ON)
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
 set(CMAKE_CXX_STANDARD 20)
@@ -29,19 +27,6 @@ if(MSVC)
     add_compile_options(/MP)
     add_compile_options(/W3)
 endif()
-
-if(PROSPERO_STATIC)
-    set(PROSPERO_LIB_TYPE STATIC)
-else()
-    set(PROSPERO_LIB_TYPE SHARED)
-endif()
-
-if(PROSPERO_STATIC)
-    add_compile_definitions(PROSPERO_STATIC)
-endif()
-
-set(PROSPERO_INCLUDES "${PROJECT_SOURCE_DIR}/include")
-set(PROSPERO_SOURCES "${PROJECT_SOURCE_DIR}/src")
 
 execute_process(COMMAND git rev-parse --short=8 HEAD WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} OUTPUT_VARIABLE GIT_COMMIT OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
 execute_process(COMMAND git rev-parse --abbrev-ref HEAD WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} OUTPUT_VARIABLE GIT_BRANCH OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)

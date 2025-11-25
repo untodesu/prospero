@@ -36,14 +36,14 @@ static bool import_buffer(std::string_view hexstring, std::array<std::byte, N>& 
     return false;
 }
 
-CORE_API void core::ed25519::generate_seed(seed_buffer& seed)
+void ed25519::generate_seed(seed_buffer& seed)
 {
     auto seed_ptr = reinterpret_cast<unsigned char*>(seed.data());
 
     ed25519_create_seed(seed_ptr);
 }
 
-CORE_API void core::ed25519::generate_keys(const seed_buffer& seed, pkey_buffer& pkey, skey_buffer& skey)
+void ed25519::generate_keys(const seed_buffer& seed, pkey_buffer& pkey, skey_buffer& skey)
 {
     auto seed_ptr = reinterpret_cast<const unsigned char*>(seed.data());
     auto pkey_ptr = reinterpret_cast<unsigned char*>(pkey.data());
@@ -52,7 +52,7 @@ CORE_API void core::ed25519::generate_keys(const seed_buffer& seed, pkey_buffer&
     ed25519_create_keypair(pkey_ptr, skey_ptr, seed_ptr);
 }
 
-CORE_API void core::ed25519::generate_exch(const skey_buffer& skey, const pkey_buffer& pkey, exch_buffer& exch)
+void ed25519::generate_exch(const skey_buffer& skey, const pkey_buffer& pkey, exch_buffer& exch)
 {
     auto skey_ptr = reinterpret_cast<const unsigned char*>(skey.data());
     auto pkey_ptr = reinterpret_cast<const unsigned char*>(pkey.data());
@@ -61,7 +61,7 @@ CORE_API void core::ed25519::generate_exch(const skey_buffer& skey, const pkey_b
     ed25519_key_exchange(exch_ptr, pkey_ptr, skey_ptr);
 }
 
-CORE_API void core::ed25519::sign(const pkey_buffer& pkey, const skey_buffer& skey, std::span<const std::byte> message, sign_buffer& sign)
+void ed25519::sign(const pkey_buffer& pkey, const skey_buffer& skey, std::span<const std::byte> message, sign_buffer& sign)
 {
     auto pkey_ptr = reinterpret_cast<const unsigned char*>(pkey.data());
     auto skey_ptr = reinterpret_cast<const unsigned char*>(skey.data());
@@ -71,7 +71,7 @@ CORE_API void core::ed25519::sign(const pkey_buffer& pkey, const skey_buffer& sk
     ed25519_sign(sign_ptr, msg_ptr, message.size_bytes(), pkey_ptr, skey_ptr);
 }
 
-CORE_API bool core::ed25519::verify(const pkey_buffer& pkey, std::span<const std::byte> message, const sign_buffer& sign)
+bool ed25519::verify(const pkey_buffer& pkey, std::span<const std::byte> message, const sign_buffer& sign)
 {
     auto pkey_ptr = reinterpret_cast<const unsigned char*>(pkey.data());
     auto msg_ptr = reinterpret_cast<const unsigned char*>(message.data());
@@ -80,22 +80,22 @@ CORE_API bool core::ed25519::verify(const pkey_buffer& pkey, std::span<const std
     return static_cast<bool>(ed25519_verify(sign_ptr, msg_ptr, message.size_bytes(), pkey_ptr));
 }
 
-CORE_API bool core::ed25519::import_public_key(std::string_view hexstring, pkey_buffer& pkey)
+bool ed25519::import_public_key(std::string_view hexstring, pkey_buffer& pkey)
 {
     return import_buffer(hexstring, pkey);
 }
 
-CORE_API bool core::ed25519::import_private_key(std::string_view hexstring, skey_buffer& skey)
+bool ed25519::import_private_key(std::string_view hexstring, skey_buffer& skey)
 {
     return import_buffer(hexstring, skey);
 }
 
-CORE_API std::string core::ed25519::export_public_key(const pkey_buffer& pkey)
+std::string ed25519::export_public_key(const pkey_buffer& pkey)
 {
     return export_buffer(pkey);
 }
 
-CORE_API std::string core::ed25519::export_private_key(const skey_buffer& skey)
+std::string ed25519::export_private_key(const skey_buffer& skey)
 {
     return export_buffer(skey);
 }

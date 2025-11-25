@@ -16,7 +16,6 @@
                 "${workspaceFolder}/external/ed25519/include",
                 "${workspaceFolder}/external/enet/include",
                 "${workspaceFolder}/external/uulog/include",
-                "${workspaceFolder}/include",
                 "${workspaceFolder}/src",
                 "${default}"
             ]

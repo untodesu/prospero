@@ -54,7 +54,7 @@ constexpr std::array<std::uint64_t, 256> CRC64ECMA_TABLE({ 0x0000000000000000, 0
     0x562E43B4931334FE, 0x913F6188692D6F4B, 0xD3CF8063C0C759D8, 0x5DEDC41A34BBEEB2, 0x1F1D25F19D51D821, 0xD80C07CD676F8394, 0x9AFCE626CE85B507 });
 } // namespace detail
 
-CORE_API std::uint64_t core::crc64ecma(const void* buffer, std::size_t size, std::uint64_t previous)
+std::uint64_t crc64ecma::get(const void* buffer, std::size_t size, std::uint64_t previous)
 {
     assert(buffer);
     assert(size);
@@ -69,12 +69,12 @@ CORE_API std::uint64_t core::crc64ecma(const void* buffer, std::size_t size, std
     return previous;
 }
 
-CORE_API std::uint64_t core::crc64ecma(std::span<const std::byte> buffer, std::uint64_t previous)
+std::uint64_t crc64ecma::get(std::span<const std::byte> buffer, std::uint64_t previous)
 {
-    return core::crc64ecma(buffer.data(), buffer.size_bytes(), previous);
+    return crc64ecma::get(buffer.data(), buffer.size_bytes(), previous);
 }
 
-CORE_API std::uint64_t core::crc64ecma(std::span<const char> buffer, std::uint64_t previous)
+std::uint64_t crc64ecma::get(std::span<const char> buffer, std::uint64_t previous)
 {
-    return core::crc64ecma(buffer.data(), buffer.size_bytes(), previous);
+    return crc64ecma::get(buffer.data(), buffer.size_bytes(), previous);
 }

@@ -9,8 +9,8 @@
 
 #include "core/config.hh"
 
-core::ed25519::pkey_buffer identity::public_key;
-core::ed25519::skey_buffer identity::private_key;
+ed25519::pkey_buffer identity::public_key;
+ed25519::skey_buffer identity::private_key;
 
 void identity::init(const std::filesystem::path& config_directory)
 {
@@ -19,24 +19,24 @@ void identity::init(const std::filesystem::path& config_directory)
 
     LOG_DEBUG("loading server identity from {}", filepath.string());
 
-    core::Config config(filepath);
+    Config config(filepath);
     auto pkey_str = config.value<std::string_view>("pkey");
     auto skey_str = config.value<std::string_view>("skey");
 
     auto invalid = false;
-    invalid = invalid || !core::ed25519::import_public_key(pkey_str, public_key);
-    invalid = invalid || !core::ed25519::import_private_key(skey_str, private_key);
+    invalid = invalid || !ed25519::import_public_key(pkey_str, public_key);
+    invalid = invalid || !ed25519::import_private_key(skey_str, private_key);
 
     if(invalid) {
         LOG_WARNING("identity file is missing or corrupted");
         LOG_WARNING("generating a new server identity keypair");
 
-        core::ed25519::seed_buffer seed;
-        core::ed25519::generate_seed(seed);
-        core::ed25519::generate_keys(seed, public_key, private_key);
+        ed25519::seed_buffer seed;
+        ed25519::generate_seed(seed);
+        ed25519::generate_keys(seed, public_key, private_key);
 
-        config.set_value<std::string_view>("pkey", core::ed25519::export_public_key(public_key));
-        config.set_value<std::string_view>("skey", core::ed25519::export_private_key(private_key));
+        config.set_value<std::string_view>("pkey", ed25519::export_public_key(public_key));
+        config.set_value<std::string_view>("skey", ed25519::export_private_key(private_key));
         config.write(filepath);
     }
 }

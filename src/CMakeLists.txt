@@ -4,5 +4,6 @@
 ## Description:
 
 add_subdirectory(core)
-add_subdirectory(qclient)
+
+add_subdirectory(client)
 add_subdirectory(server)
