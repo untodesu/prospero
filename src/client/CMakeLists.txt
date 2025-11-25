@@ -4,16 +4,12 @@
 ## Description: QML client executable build configuration
 
 qt_add_executable(prospero
-    "${CMAKE_CURRENT_LIST_DIR}/channel.cc"
-    "${CMAKE_CURRENT_LIST_DIR}/channel.hh"
     "${CMAKE_CURRENT_LIST_DIR}/clipboard.cc"
     "${CMAKE_CURRENT_LIST_DIR}/clipboard.hh"
     "${CMAKE_CURRENT_LIST_DIR}/identity.cc"
     "${CMAKE_CURRENT_LIST_DIR}/identity.hh"
-    "${CMAKE_CURRENT_LIST_DIR}/precompiled.hh"
     "${CMAKE_CURRENT_LIST_DIR}/main.cc"
-    "${CMAKE_CURRENT_LIST_DIR}/member.cc"
-    "${CMAKE_CURRENT_LIST_DIR}/member.hh"
+    "${CMAKE_CURRENT_LIST_DIR}/precompiled.hh"
     "${CMAKE_CURRENT_LIST_DIR}/session.cc"
     "${CMAKE_CURRENT_LIST_DIR}/session.hh"
     "${CMAKE_CURRENT_LIST_DIR}/version.cc"

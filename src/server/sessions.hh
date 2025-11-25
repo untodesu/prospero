@@ -61,8 +61,8 @@ void send_packet(Session* session, std::uint32_t channel, const TextMessage& pac
 
 namespace sessions
 {
-void broadcast_packet(SystemMessage& packet, std::uint32_t channel);
-void broadcast_packet(TextMessage& packet, std::uint32_t channel);
+void broadcast_packet(const SystemMessage& packet, std::uint32_t channel);
+void broadcast_packet(const TextMessage& packet, std::uint32_t channel);
 } // namespace sessions
 
 #endif

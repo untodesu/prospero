@@ -11,6 +11,8 @@
 
 struct AuthChallengeRequest;
 struct AuthChallengeResult;
+struct SystemMessage;
+struct TextMessage;
 
 class Session final : public QObject {
     Q_OBJECT
@@ -20,8 +22,10 @@ class Session final : public QObject {
     Q_PROPERTY(QList<QString> channels READ channels NOTIFY channels_changed)
 
 public:
+    static Session* instance;
+
     explicit Session(QObject* parent = nullptr);
-    virtual ~Session(void) override = default;
+    virtual ~Session(void) override;
 
     Q_INVOKABLE void connect_to_host(const QString& full_address);
     Q_INVOKABLE void connect_to_host(const QLatin1String& host, quint16 port);
@@ -48,8 +52,10 @@ private slots:
 private:
     void reset_session_data(void);
     void handle_packet(const ENetPacket* packet, quint32 channel);
-    void handle_auth_challenge_request(const AuthChallengeRequest& request);
-    void handle_auth_challenge_result(const AuthChallengeResult& result);
+    void handle_auth_challenge_request(const AuthChallengeRequest& packet);
+    void handle_auth_challenge_result(const AuthChallengeResult& packet);
+    void handle_system_message(quint32 channel, const SystemMessage& packet);
+    void handle_text_message(quint32 channel, const TextMessage& packet);
 
     ENetHost* m_host;
     QTimer* m_host_timer;

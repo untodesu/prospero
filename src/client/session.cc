@@ -11,6 +11,10 @@
 #include "core/exception.hh"
 #include "core/protocol.hh"
 
+#include "client/identity.hh"
+
+Session* Session::instance = nullptr;
+
 Session::Session(QObject* parent) : QObject(parent)
 {
     m_host_timer = new QTimer(this);
@@ -29,6 +33,14 @@ Session::Session(QObject* parent) : QObject(parent)
     m_channels.resize(PROTOCOL_MAXCHAN, QString());
 
     reset_session_data();
+}
+
+Session::~Session(void)
+{
+    if(m_server) {
+        enet_peer_disconnect(m_server, 0U);
+        enet_host_flush(m_host);
+    }
 }
 
 void Session::connect_to_host(const QString& full_address)
@@ -152,17 +164,127 @@ void Session::reset_session_data(void)
 
 void Session::handle_packet(const ENetPacket* packet, quint32 channel)
 {
+    assert(packet);
+    assert(channel < PROTOCOL_MAXCHAN);
+
+    thread_local ReadBuffer buffer;
+    thread_local AuthChallengeRequest auth_request;
+    thread_local AuthChallengeResult auth_result;
+    thread_local ChannelDefinition channel_definition;
+    thread_local SystemMessage system_message;
+    thread_local TextMessage text_message;
+
+    buffer.reset(packet->data, packet->dataLength);
+
+    auto packet_type = buffer.read<std::uint32_t>();
+
+    if(packet_type == AuthChallengeRequest::ID) {
+        if(channel == PROTOCOL_AUTHCHAN && m_aes_context == nullptr) {
+            AuthChallengeRequest::deserialize(buffer, auth_request);
+            handle_auth_challenge_request(auth_request);
+            return;
+        }
+
+        enet_peer_disconnect(m_server, 0U);
+        return;
+    }
+
+    if(packet_type == AuthChallengeResult::ID) {
+        if(channel == PROTOCOL_AUTHCHAN && m_aes_context == nullptr) {
+            AuthChallengeResult::deserialize(buffer, auth_result);
+            handle_auth_challenge_result(auth_result);
+            return;
+        }
+
+        enet_peer_disconnect(m_server, 0U);
+        return;
+    }
+
+    if(m_aes_context) {
+        switch(packet_type) {
+            case ChannelDefinition::ID:
+                ChannelDefinition::deserialize(m_aes_context, buffer, channel_definition);
+                m_channels[channel] = QString::fromStdString(channel_definition.name);
+                emit channels_changed();
+                break;
+
+            case SystemMessage::ID:
+                SystemMessage::deserialize(m_aes_context, buffer, system_message);
+                handle_system_message(channel, system_message);
+                break;
+
+            case TextMessage::ID:
+                TextMessage::deserialize(m_aes_context, buffer, text_message);
+                handle_text_message(channel, text_message);
+                break;
+
+            default:
+                enet_peer_disconnect(m_server, 0U);
+                break;
+        }
+    }
 }
 
-void Session::handle_auth_challenge_request(const AuthChallengeRequest& request)
-{
-}
-
-void Session::handle_auth_challenge_result(const AuthChallengeResult& result)
+void Session::handle_auth_challenge_request(const AuthChallengeRequest& packet)
 {
     assert(m_server);
-    assert(m_aes_context);
+    assert(m_aes_context == nullptr);
 
-    if(result.status == AuthChallengeResult::E_OK) {
+    auto& public_key = Identity::instance->public_key();
+    auto& private_key = Identity::instance->private_key();
+
+    thread_local WriteBuffer buffer;
+    thread_local AuthChallengeResponse response;
+
+    response.client_pkey = public_key;
+    response.username = std::string("prosperoclient"); // TODO: make configurable
+    ed25519::sign(public_key, private_key, packet.challenge_data, response.signature);
+
+    buffer.reset();
+    buffer.write<std::uint32_t>(AuthChallengeResponse::ID);
+    AuthChallengeResponse::serialize(buffer, response);
+
+    enet_peer_send(m_server, PROTOCOL_AUTHCHAN, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+}
+
+void Session::handle_auth_challenge_result(const AuthChallengeResult& packet)
+{
+    assert(m_server);
+    assert(m_aes_context == nullptr);
+
+    if(packet.status == AuthChallengeResult::E_OK) {
+        ed25519::exch_buffer shared_secret;
+        ed25519::generate_exch(Identity::instance->private_key(), packet.server_pkey, shared_secret);
+        aes256::create(m_aes_context, shared_secret);
+
+        m_username = QString::fromStdString(packet.username);
+
+        emit authentication_changed(true, packet.status);
     }
+    else {
+        emit authentication_changed(false, packet.status);
+    }
+}
+
+void Session::handle_system_message(quint32 channel, const SystemMessage& packet)
+{
+    assert(m_aes_context);
+    assert(channel < PROTOCOL_MAXCHAN);
+
+    auto timestamp = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(packet.timestamp), QTimeZone::UTC);
+    auto message = QString::fromStdString(packet.message);
+
+    emit system_message_received(channel, timestamp, message);
+}
+
+void Session::handle_text_message(quint32 channel, const TextMessage& packet)
+{
+    assert(m_aes_context);
+    assert(channel < PROTOCOL_MAXCHAN);
+
+    auto timestamp = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(packet.timestamp), QTimeZone::UTC);
+    auto sender = QString::fromStdString(packet.username);
+    auto message = QString::fromStdString(packet.message);
+
+    emit text_message_received(channel, timestamp, sender, message);
 }

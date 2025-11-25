@@ -111,6 +111,7 @@ static bool authenticate_session(Session* session, const AuthChallengeResponse& 
 
     AuthChallengeResult response;
     response.status = AuthChallengeResult::E_OK;
+    response.server_pkey = identity::public_key;
     response.username = session->username;
 
     sessions::send_packet(session, PROTOCOL_AUTHCHAN, response);
@@ -167,7 +168,6 @@ void sessions::create(ENetPeer* peer)
             peer->data = &vector[i];
 
             AuthChallengeRequest packet;
-            packet.server_pkey = identity::public_key;
             packet.challenge_data = vector[i].challenge;
             packet.challenge_timestamp = vector[i].challenge_timestamp;
             packet.protocol_version = PROTOCOL_VERSION;

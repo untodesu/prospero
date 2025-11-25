@@ -40,6 +40,9 @@ int main(int argc, char** argv)
 
         qml->load(QUrl(QStringLiteral("qrc:/qml/MainWindow.qml")));
 
+        // Debugging purposes
+        Session::instance->connect_to_host("127.0.0.1");
+
         auto result = app.exec();
 
         delete qml;

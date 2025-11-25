@@ -40,7 +40,6 @@ struct AuthChallengeRequest final : public BasePacket<PacketType::AuthChallengeR
     static void deserialize(ReadBuffer& buffer, AuthChallengeRequest& packet);
     static void serialize(WriteBuffer& buffer, const AuthChallengeRequest& packet);
 
-    ed25519::pkey_buffer server_pkey;    ///< Server's ed25519 public key
     ed25519::seed_buffer challenge_data; ///< Random nonce to be signed by the client
     std::uint64_t challenge_timestamp;   ///< Challenge timestamp in UTC UNIX milliseconds
     std::uint32_t protocol_version;      ///< Protocol version expected by the server
@@ -68,8 +67,9 @@ struct AuthChallengeResult final : public BasePacket<PacketType::AuthChallengeRe
     static void deserialize(ReadBuffer& buffer, AuthChallengeResult& packet);
     static void serialize(WriteBuffer& buffer, const AuthChallengeResult& packet);
 
-    std::uint32_t status; ///< Authentication result
-    std::string username; ///< Assigned username on E_OK, empty otherwise
+    std::uint32_t status;             ///< Authentication result
+    ed25519::pkey_buffer server_pkey; ///< Server's ed25519 public key
+    std::string username;             ///< Assigned username on E_OK, empty otherwise
 };
 
 /// Sent on specific channel (so the channel ID is inferred through ENet's API) by the server
