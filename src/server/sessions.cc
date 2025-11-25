@@ -12,6 +12,7 @@
 #include "core/unixtime.hh"
 
 #include "server/channels.hh"
+#include "server/host.hh"
 #include "server/identity.hh"
 #include "server/settings.hh"
 #include "server/userlist.hh"
@@ -125,6 +126,12 @@ static bool authenticate_session(Session* session, const AuthChallengeResponse& 
         }
     }
 
+    SystemMessage notification;
+    notification.message = std::format("{} has joined the server", session->username);
+    notification.timestamp = unixtime::milliseconds();
+
+    sessions::broadcast_packet(notification, PROTOCOL_AUTHCHAN);
+
     return true;
 }
 
@@ -215,6 +222,13 @@ void sessions::update(ENetPeer* peer, const ENetPacket* packet, std::uint32_t ch
             auto authenticated = true;
             authenticated = authenticated && channel == PROTOCOL_AUTHCHAN;
             authenticated = authenticated && authenticate_session(session, auth_challenge_response);
+
+            for(int i = 0; i < 10; ++i) {
+                // This ensures the packets get transmitted
+                // because for some reason enet_host_flush just
+                // doesn't work here? PATCHME: this is dumb
+                host::update();
+            }
 
             if(authenticated) {
                 username_map[session->username] = session;

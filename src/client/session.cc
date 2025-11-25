@@ -17,6 +17,8 @@ Session* Session::instance = nullptr;
 
 Session::Session(QObject* parent) : QObject(parent)
 {
+    m_aes_context = nullptr;
+
     m_host_timer = new QTimer(this);
     m_host_timer->setInterval(20);
     m_host_timer->setSingleShot(false);
@@ -124,6 +126,25 @@ const QList<QString>& Session::channels(void) const
     return m_channels;
 }
 
+bool Session::is_filtered(quint32 channel_id) const
+{
+    return m_filter.contains(channel_id);
+}
+
+void Session::filter_channel(quint32 channel_id)
+{
+    m_filter.insert(channel_id);
+
+    emit filter_changed();
+}
+
+void Session::unfilter_channel(quint32 channel_id)
+{
+    m_filter.remove(channel_id);
+
+    emit filter_changed();
+}
+
 void Session::update_host(void)
 {
     assert(m_host);
@@ -131,6 +152,8 @@ void Session::update_host(void)
     thread_local ENetEvent event;
 
     while(0 < enet_host_service(m_host, &event, 0)) {
+        qDebug() << "ENet event type:" << event.type;
+
         if(event.type == ENET_EVENT_TYPE_CONNECT) {
             emit connection_changed(true);
             continue;
@@ -160,6 +183,10 @@ void Session::reset_session_data(void)
     m_aes_context = nullptr;
     m_username.clear();
     m_channels.fill(QString());
+    m_filter.clear();
+
+    emit channels_changed();
+    emit filter_changed();
 }
 
 void Session::handle_packet(const ENetPacket* packet, quint32 channel)
@@ -204,8 +231,7 @@ void Session::handle_packet(const ENetPacket* packet, quint32 channel)
         switch(packet_type) {
             case ChannelDefinition::ID:
                 ChannelDefinition::deserialize(m_aes_context, buffer, channel_definition);
-                m_channels[channel] = QString::fromStdString(channel_definition.name);
-                emit channels_changed();
+                handle_channel_definition(channel, channel_definition);
                 break;
 
             case SystemMessage::ID:
@@ -258,12 +284,41 @@ void Session::handle_auth_challenge_result(const AuthChallengeResult& packet)
         aes256::create(m_aes_context, shared_secret);
 
         m_username = QString::fromStdString(packet.username);
-
-        emit authentication_changed(true, packet.status);
     }
     else {
-        emit authentication_changed(false, packet.status);
+        QString message;
+
+        switch(packet.status) {
+            case AuthChallengeResult::E_CRED:
+                message = tr("invalid credentials");
+                break;
+
+            case AuthChallengeResult::E_TIME:
+                message = tr("authentication timeout");
+                break;
+
+            case AuthChallengeResult::E_UNREC:
+                message = tr("unrecognized public key");
+                break;
+
+            default:
+                message = tr("unknown error");
+                break;
+        }
+
+        emit system_message_received(QDateTime::currentDateTime(), tr("Auth failed: %1").arg(message));
     }
+}
+
+void Session::handle_channel_definition(quint32 channel, const ChannelDefinition& packet)
+{
+    m_channels[channel] = QString::fromStdString(packet.name);
+
+    if(m_filter.isEmpty()) {
+        filter_channel(channel);
+    }
+
+    emit channels_changed();
 }
 
 void Session::handle_system_message(quint32 channel, const SystemMessage& packet)
@@ -274,7 +329,9 @@ void Session::handle_system_message(quint32 channel, const SystemMessage& packet
     auto timestamp = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(packet.timestamp), QTimeZone::UTC);
     auto message = QString::fromStdString(packet.message);
 
-    emit system_message_received(channel, timestamp, message);
+    emit system_message_received(timestamp, message);
+
+    qDebug() << message;
 }
 
 void Session::handle_text_message(quint32 channel, const TextMessage& packet)

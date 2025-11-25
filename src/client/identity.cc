@@ -50,6 +50,10 @@ void Identity::import_keypair(void)
             auto message = tr("The selected file is not a valid identity file");
             QMessageBox::warning(nullptr, title, message);
         }
+
+        if(!export_file(m_filepath)) {
+            throw core::runtime_error("cannot export identity keypair to {}", m_filepath.string());
+        }
     }
 }
 

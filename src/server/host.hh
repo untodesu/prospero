@@ -9,6 +9,11 @@
 
 namespace host
 {
+extern ENetHost* instance;
+} // namespace host
+
+namespace host
+{
 void init(void);
 void init_late(void);
 void shutdown(void);

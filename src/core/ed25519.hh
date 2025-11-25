@@ -35,6 +35,7 @@ bool import_public_key(std::string_view hexstring, pkey_buffer& pkey);
 bool import_private_key(std::string_view hexstring, skey_buffer& skey);
 std::string export_public_key(const pkey_buffer& pkey);
 std::string export_private_key(const skey_buffer& skey);
+std::string export_signature(const sign_buffer& sign);
 } // namespace ed25519
 
 #endif

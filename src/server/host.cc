@@ -13,7 +13,7 @@
 #include "server/sessions.hh"
 #include "server/settings.hh"
 
-static ENetHost* enet_host = nullptr;
+ENetHost* host::instance = nullptr;
 
 void host::init(void)
 {
@@ -24,9 +24,9 @@ void host::init(void)
     address.host = ENET_HOST_ANY;
     address.port = settings::host::udp_port;
 
-    enet_host = enet_host_create(&address, settings::host::max_peers, PROTOCOL_MAXCHAN, 0U, 0U);
+    host::instance = enet_host_create(&address, settings::host::max_peers, PROTOCOL_MAXCHAN, 0U, 0U);
 
-    if(enet_host == nullptr) {
+    if(host::instance == nullptr) {
         throw core::runtime_error("failed to create a server host");
     }
 
@@ -35,15 +35,15 @@ void host::init(void)
 
 void host::shutdown(void)
 {
-    enet_host_service(enet_host, nullptr, 500);
-    enet_host_destroy(enet_host);
+    enet_host_service(host::instance, nullptr, 500);
+    enet_host_destroy(host::instance);
 }
 
 void host::update(void)
 {
     thread_local ENetEvent event;
 
-    while(0 < enet_host_service(enet_host, &event, 10)) {
+    while(0 < enet_host_service(host::instance, &event, 10)) {
         switch(event.type) {
             case ENET_EVENT_TYPE_CONNECT:
                 sessions::create(event.peer);

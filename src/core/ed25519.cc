@@ -99,3 +99,8 @@ std::string ed25519::export_private_key(const skey_buffer& skey)
 {
     return export_buffer(skey);
 }
+
+std::string ed25519::export_signature(const sign_buffer& sign)
+{
+    return export_buffer(sign);
+}

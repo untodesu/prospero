@@ -48,6 +48,7 @@
 #include <QClipboard>
 #include <QDateTime>
 #include <QFileDialog>
+#include <QFontDatabase>
 #include <QHash>
 #include <QMessageBox>
 #include <QPair>

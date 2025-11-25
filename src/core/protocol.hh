@@ -82,7 +82,7 @@ struct ChannelDefinition final : public BasePacket<PacketType::ChannelDefinition
     std::string name; ///< Channel name
 };
 
-/// Sent on a specific channel by the server to broadcast a system message for all the
+/// Sent on PROTOCOL_AUTHCHAN by the server to broadcast a system message for all the
 /// clients currently present in the channel; this can be used as a response to admin commands
 struct SystemMessage final : public BasePacket<PacketType::SystemMessage> {
     static void deserialize(aes256::context& context, ReadBuffer& buffer, SystemMessage& packet);

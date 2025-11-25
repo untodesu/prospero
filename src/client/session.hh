@@ -11,14 +11,15 @@
 
 struct AuthChallengeRequest;
 struct AuthChallengeResult;
+struct ChannelDefinition;
 struct SystemMessage;
 struct TextMessage;
 
 class Session final : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool is_connected READ is_connected NOTIFY connection_changed)
-    Q_PROPERTY(bool is_authenticated READ is_authenticated NOTIFY authentication_changed)
-    Q_PROPERTY(QString username READ username NOTIFY authentication_changed)
+    Q_PROPERTY(bool is_authenticated READ is_authenticated)
+    Q_PROPERTY(QString username READ username)
     Q_PROPERTY(QList<QString> channels READ channels NOTIFY channels_changed)
 
 public:
@@ -38,12 +39,16 @@ public:
     Q_INVOKABLE const QString& username(void) const;
     Q_INVOKABLE const QList<QString>& channels(void) const;
 
+    Q_INVOKABLE bool is_filtered(quint32 channel_id) const;
+    Q_INVOKABLE void filter_channel(quint32 channel_id);
+    Q_INVOKABLE void unfilter_channel(quint32 channel_id);
+
 signals:
     void connection_changed(bool is_connected);
-    void authentication_changed(bool is_authenticated, quint32 status);
     void channels_changed(void);
+    void filter_changed(void);
 
-    void system_message_received(quint32 channel, const QDateTime& timetamp, const QString& message);
+    void system_message_received(const QDateTime& timetamp, const QString& message);
     void text_message_received(quint32 channel, const QDateTime& timetamp, const QString& sender, const QString& message);
 
 private slots:
@@ -54,6 +59,7 @@ private:
     void handle_packet(const ENetPacket* packet, quint32 channel);
     void handle_auth_challenge_request(const AuthChallengeRequest& packet);
     void handle_auth_challenge_result(const AuthChallengeResult& packet);
+    void handle_channel_definition(quint32 channel, const ChannelDefinition& packet);
     void handle_system_message(quint32 channel, const SystemMessage& packet);
     void handle_text_message(quint32 channel, const TextMessage& packet);
 
@@ -65,6 +71,7 @@ private:
     QString m_username;
 
     QList<QString> m_channels;
+    QSet<quint32> m_filter;
 };
 
 #endif
