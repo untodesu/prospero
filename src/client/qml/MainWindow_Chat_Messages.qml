@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtQml.Models
 
 ListView {
     id: main_window_chat_messages
@@ -8,7 +9,7 @@ ListView {
     Layout.fillWidth: true
     Layout.fillHeight: true
 
-    spacing: 8
+    spacing: 0
 
     clip: true
 
@@ -20,85 +21,25 @@ ListView {
         id: chat_model
     }
 
-    delegate: Rectangle {
-        readonly property color hover_color: palette.button
-        readonly property color normal_color: "transparent"
+    delegate: DelegateChooser {
+        role: "is_system_message"
 
-        width: parent ? parent.width : implicitWidth
-        height: message_layout.implicitHeight + 8
+        DelegateChoice {
+            roleValue: true
 
-        color: normal_color
-
-        ColumnLayout {
-            id: message_layout
-
-            anchors.fill: parent
-            anchors.margins: 4
-            spacing: 2
-
-            RowLayout {
-                TextEdit {
-                    Layout.fillWidth: false
-                    Layout.fillHeight: true
-
-                    font.family: g_monospace.family
-                    font.bold: true
-
-                    text: model.username
-
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-
-                    readOnly: true
-                    selectByMouse: true
-
-                    color: palette.windowText
-                }
-
-                TextEdit {
-                    Layout.fillWidth: false
-                    Layout.fillHeight: true
-
-                    font.family: g_monospace.family
-                    font.pointSize: 8
-
-                    opacity: 0.5
-
-                    text: Qt.formatDateTime(model.timestamp, "yyyy-MM-dd hh:mm:ss")
-
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-
-                    readOnly: true
-                    selectByMouse: true
-
-                    color: palette.windowText
-                }
-            }
-
-            TextEdit {
-                anchors.margins: 64
-
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                text: model.message
-
-                wrapMode: Text.WordWrap
-
-                horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignTop
-
-                readOnly: true
-                selectByMouse: true
-
-                color: palette.windowText
+            MainWindow_Chat_NotificationDelegate {
+                timestamp: model.timestamp
+                message: model.message
             }
         }
 
-        HoverHandler {
-            onHoveredChanged: {
-                parent.color = hovered ? parent.hover_color : parent.normal_color;
+        DelegateChoice {
+            roleValue: false
+
+            MainWindow_Chat_TextMessageDelegate {
+                timestamp: model.timestamp
+                username: model.username
+                message: model.message
             }
         }
     }
@@ -108,6 +49,7 @@ ListView {
 
         function onSystem_message_received(timestamp, message) {
             chat_model.append({
+                is_system_message: true,
                 username: qsTr("System Message"),
                 timestamp: timestamp,
                 message: message
@@ -116,9 +58,10 @@ ListView {
             main_window_chat_messages.positionViewAtEnd();
         }
 
-        function onText_message_received(timestamp, sender, message) {
+        function onText_message_received(timestamp, username, message) {
             chat_model.append({
-                username: sender,
+                is_system_message: false,
+                username: username,
                 timestamp: timestamp,
                 message: message
             });

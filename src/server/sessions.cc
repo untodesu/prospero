@@ -83,7 +83,12 @@ static bool authenticate_session(Session* session, const AuthResponse& packet)
     authenticated = authenticated && ed25519::verify(packet.public_key, session->challenge, packet.signature);
     authenticated = authenticated && userlist::lookup(packet.public_key);
 
+    if(!settings::auth::allow_cloned_pkeys) {
+        authenticated = authenticated && nullptr == sessions::lookup(packet.public_key);
+    }
+
     if(authenticated) {
+        session->public_key = packet.public_key;
         session->username = generate_username(packet.desired_username);
 
         LOG_INFO("assigned username={} to authenticated session", session->username);
@@ -166,6 +171,8 @@ void sessions::remove(ENetPeer* peer)
             username_map.erase(session->username);
             username_set.erase(session->username);
 
+            sessions::broadcast_notification(Notification::T_USER_LEFT, session->username);
+
             reset_session_data(session);
         }
     }
@@ -232,6 +239,17 @@ Session* sessions::lookup(const std::string& username)
     if(it == username_map.cend())
         return nullptr;
     return it->second;
+}
+
+Session* sessions::lookup(const ed25519::pkey_buffer& public_key)
+{
+    for(auto& session : vector) {
+        if(session.peer && session.public_key == public_key) {
+            return &session;
+        }
+    }
+
+    return nullptr;
 }
 
 void sessions::send_packet(Session* session, const AuthRequest& packet)

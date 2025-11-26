@@ -153,6 +153,18 @@ bool Config::write(const std::filesystem::path& path) const
 }
 
 template<>
+bool Config::value<bool>(std::string_view key, bool default_value) const
+{
+    auto it = this->find(std::string(key));
+
+    if(it == this->cend()) {
+        return default_value;
+    }
+
+    return it->second.compare("false") && 0 == it->second.compare("true");
+}
+
+template<>
 unsigned char Config::value<unsigned char>(std::string_view key, unsigned char default_value) const
 {
     return config_value_autobase(this, std::string(key), default_value);
@@ -234,6 +246,12 @@ std::string_view Config::value<std::string_view>(std::string_view key, std::stri
     }
 
     return it->second;
+}
+
+template<>
+void Config::set_value<bool>(std::string_view key, bool value)
+{
+    this->insert_or_assign(std::string(key), value ? "true" : "false");
 }
 
 template<>

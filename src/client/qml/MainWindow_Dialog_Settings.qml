@@ -59,14 +59,14 @@ Dialog {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    text: g_session.desired_username
+                    text: g_settings.username
 
                     font.family: g_monospace.family
 
                     enabled: !g_session.is_connected
 
                     onTextChanged: {
-                        g_session.desired_username = text;
+                        g_settings.username = text;
                     }
 
                     validator: RegularExpressionValidator {
@@ -91,7 +91,7 @@ Dialog {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
 
-                        text: g_identity.public_key
+                        text: g_settings.public_key
 
                         font.family: g_monospace.family
 
@@ -107,72 +107,18 @@ Dialog {
 
                         Layout.fillWidth: false
                         Layout.fillHeight: true
-                        Layout.preferredWidth: implicitHeight
 
-                        text: "\u25BC" // unicode down pointing triangle
+                        text: qsTr("Copy")
 
                         onClicked: {
-                            identity_menu.popup(identity_button, 0, identity_button.height);
+                            g_clipboard.set_text(g_settings.public_key);
                         }
+
+                        Accessible.name: qsTr("Copy public key menu item")
+                        Accessible.description: qsTr("Menu item to copy the public key to the clipboard")
                     }
                 }
             }
-        }
-    }
-
-    Menu {
-        id: identity_menu
-
-        Action {
-            text: qsTr("Copy")
-
-            onTriggered: {
-                g_clipboard.set_text(g_identity.public_key);
-            }
-
-            Accessible.name: qsTr("Copy public key menu item")
-            Accessible.description: qsTr("Menu item to copy the public key to the clipboard")
-        }
-
-        MenuSeparator {}
-
-        Action {
-            text: qsTr("Export")
-
-            onTriggered: {
-                g_identity.export_keypair();
-            }
-
-            Accessible.name: qsTr("Export keypair menu item")
-            Accessible.description: qsTr("Menu item to export the identity keypair")
-        }
-
-        Action {
-            text: qsTr("Import")
-
-            enabled: !g_session.is_connected
-
-            onTriggered: {
-                g_identity.import_keypair();
-            }
-
-            Accessible.name: qsTr("Import keypair menu item")
-            Accessible.description: qsTr("Menu item to import an identity keypair") 
-        }
-
-        MenuSeparator {}
-
-        Action {
-            text: qsTr("Generate")
-
-            enabled: !g_session.is_connected
-
-            onTriggered: {
-                g_identity.generate_keypair();
-            }
-
-            Accessible.name: qsTr("Generate keypair menu item") 
-            Accessible.description: qsTr("Menu item to generate a new identity keypair")
         }
     }
 }

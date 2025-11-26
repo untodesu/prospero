@@ -26,4 +26,6 @@ ColumnLayout {
     function clear() {
         main_window_chat_list.model.clear();
     }
+
+    Keys.forwardTo: main_window_chat_input
 }

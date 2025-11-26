@@ -6,12 +6,12 @@
 qt_add_executable(prospero
     "${CMAKE_CURRENT_LIST_DIR}/clipboard.cc"
     "${CMAKE_CURRENT_LIST_DIR}/clipboard.hh"
-    "${CMAKE_CURRENT_LIST_DIR}/identity.cc"
-    "${CMAKE_CURRENT_LIST_DIR}/identity.hh"
     "${CMAKE_CURRENT_LIST_DIR}/main.cc"
     "${CMAKE_CURRENT_LIST_DIR}/precompiled.hh"
     "${CMAKE_CURRENT_LIST_DIR}/session.cc"
     "${CMAKE_CURRENT_LIST_DIR}/session.hh"
+    "${CMAKE_CURRENT_LIST_DIR}/settings.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/settings.hh"
     "${CMAKE_CURRENT_LIST_DIR}/version.cc"
     "${CMAKE_CURRENT_LIST_DIR}/version.hh")
 target_compile_features(prospero PUBLIC cxx_std_20)

@@ -8,39 +8,32 @@
 #include "client/session.hh"
 
 #include "core/buffer.hh"
-#include "core/config.hh"
 #include "core/exception.hh"
 #include "core/protocol.hh"
 
-#include "client/identity.hh"
+#include "client/settings.hh"
 
 Session* Session::instance = nullptr;
 
 Session::Session(QObject* parent) : QObject(parent)
 {
-    std::filesystem::path app_data_directory(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString());
-    std::filesystem::create_directories(app_data_directory);
-
-    m_config_path = app_data_directory / "client.conf";
-
-    m_aes_context = nullptr;
-
     m_host_timer = new QTimer(this);
     m_host_timer->setInterval(20);
     m_host_timer->setSingleShot(false);
     m_host_timer->start();
 
-    m_host = enet_host_create(nullptr, 1U, PROTOCOL_MAXCHAN, 0U, 0U);
+    m_host = enet_host_create(nullptr, 1U, 1U, 0U, 0U);
 
     if(m_host == nullptr) {
         throw core::runtime_error("failed to create a client host");
     }
 
+    m_server = nullptr;
+    m_aes_context = nullptr;
+
     connect(m_host_timer, &QTimer::timeout, this, &Session::update_host);
 
     reset_session_data();
-
-    load_from_config();
 }
 
 Session::~Session(void)
@@ -53,6 +46,21 @@ Session::~Session(void)
             // empty
         }
     }
+}
+
+bool Session::is_connected(void) const
+{
+    return m_server && m_server->state == ENET_PEER_STATE_CONNECTED;
+}
+
+bool Session::is_authenticated(void) const
+{
+    return m_server && m_server->state == ENET_PEER_STATE_CONNECTED && m_aes_context;
+}
+
+const QString& Session::assigned_username(void) const
+{
+    return m_assigned_username;
 }
 
 void Session::connect_to_host(const QString& full_address)
@@ -86,7 +94,27 @@ void Session::connect_to_host(const QLatin1String& host, quint16 port)
     enet_address_set_host(&address, host.latin1());
     address.port = port;
 
-    m_server = enet_host_connect(m_host, &address, PROTOCOL_MAXCHAN, 0U);
+    m_server = enet_host_connect(m_host, &address, 1U, 0U);
+
+    if(m_server) {
+        thread_local ENetEvent event;
+
+        for(int i = 0; i < 150; ++i) {
+            if(0 < enet_host_service(m_host, &event, 10U)) {
+                if(event.type == ENET_EVENT_TYPE_CONNECT) {
+                    emit connection_changed();
+                    return;
+                }
+            }
+
+            QCoreApplication::processEvents();
+        }
+    }
+
+    enet_peer_reset(m_server);
+    reset_session_data();
+
+    add_notification_generic(QDateTime::currentDateTime(), tr("Failed to connect to server"));
 }
 
 void Session::disconnect_from_host(void)
@@ -96,9 +124,24 @@ void Session::disconnect_from_host(void)
     }
 }
 
-void Session::add_system_message(const QString& message)
+void Session::add_notification_user_join(const QDateTime& timestamp, const QString& username)
 {
-    emit system_message_received(QDateTime::currentDateTime(), message);
+    emit system_message_received(timestamp, tr("%1 connected to the server").arg(username));
+}
+
+void Session::add_notification_user_left(const QDateTime& timestamp, const QString& username)
+{
+    emit system_message_received(timestamp, tr("%1 disconnected from the server").arg(username));
+}
+
+void Session::add_notification_permissions_modified(const QDateTime& timestamp)
+{
+    emit system_message_received(timestamp, tr("Server permissions have been updated"));
+}
+
+void Session::add_notification_generic(const QDateTime& timestamp, const QString& message)
+{
+    emit system_message_received(timestamp, message);
 }
 
 void Session::send_text_message(const QString& message)
@@ -117,38 +160,7 @@ void Session::send_text_message(const QString& message)
     buffer.write<std::uint32_t>(TextMessage::ID);
     TextMessage::serialize(m_aes_context, buffer, packet);
 
-    enet_peer_send(m_server, Session::random_channel(), enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
-}
-
-Q_INVOKABLE const QString& Session::desired_username(void) const
-{
-    return m_desired_username;
-}
-
-Q_INVOKABLE void Session::set_desired_username(const QString& username)
-{
-    if(m_desired_username.compare(username)) {
-        m_desired_username = username;
-
-        save_to_config();
-
-        emit desired_username_changed();
-    }
-}
-
-bool Session::is_connected(void) const
-{
-    return m_server && m_server->state == ENET_PEER_STATE_CONNECTED;
-}
-
-bool Session::is_authenticated(void) const
-{
-    return m_server && m_aes_context;
-}
-
-const QString& Session::username(void) const
-{
-    return m_username;
+    enet_peer_send(m_server, 0U, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
 void Session::update_host(void)
@@ -158,48 +170,19 @@ void Session::update_host(void)
     thread_local ENetEvent event;
 
     while(0 < enet_host_service(m_host, &event, 0)) {
-        qDebug() << "ENet event type:" << event.type;
-
-        if(event.type == ENET_EVENT_TYPE_CONNECT) {
-            emit connection_changed(true);
-            continue;
-        }
-
         if(event.type == ENET_EVENT_TYPE_RECEIVE) {
-            handle_packet(event.packet, event.channelID);
+            handle_packet(event.packet);
             enet_packet_destroy(event.packet);
             continue;
         }
 
         if(event.type == ENET_EVENT_TYPE_DISCONNECT) {
+            add_notification_generic(QDateTime::currentDateTime(), tr("Disconnected from server"));
             reset_session_data();
-            emit connection_changed(false);
+            emit connection_changed();
             continue;
         }
     }
-}
-
-std::uint32_t Session::random_channel(void)
-{
-    auto generator = QRandomGenerator::system();
-
-    return generator->bounded(0U, PROTOCOL_MAXCHAN - 1U);
-}
-
-void Session::load_from_config(void)
-{
-    Config config(m_config_path);
-
-    m_desired_username = QString::fromStdString(std::string(config.value<std::string_view>("desired_username", "prosperoclient")));
-}
-
-void Session::save_to_config(void)
-{
-    Config config;
-
-    config.set_value<std::string_view>("desired_username", m_desired_username.toStdString());
-
-    config.write(m_config_path);
 }
 
 void Session::reset_session_data(void)
@@ -210,51 +193,52 @@ void Session::reset_session_data(void)
 
     m_server = nullptr;
     m_aes_context = nullptr;
-    m_username.clear();
+    m_assigned_username.clear();
 }
 
-void Session::handle_packet(const ENetPacket* packet, quint32 channel)
+void Session::handle_packet(const ENetPacket* packet)
 {
     assert(packet);
-    assert(channel < PROTOCOL_MAXCHAN);
 
     thread_local ReadBuffer buffer;
-    thread_local AuthChallengeRequest auth_request;
-    thread_local AuthChallengeResult auth_result;
-    thread_local SystemMessage system_message;
+    thread_local AuthRequest auth_request;
+    thread_local AuthResult auth_result;
+    thread_local Notification notification;
     thread_local TextMessage text_message;
 
     buffer.reset(packet->data, packet->dataLength);
 
     auto packet_type = buffer.read<std::uint32_t>();
 
-    if(packet_type == AuthChallengeRequest::ID) {
-        if(channel == PROTOCOL_AUTHCHAN && m_aes_context == nullptr) {
-            AuthChallengeRequest::deserialize(buffer, auth_request);
-            handle_auth_challenge_request(auth_request);
-            return;
+    if(packet_type == AuthRequest::ID) {
+        if(m_aes_context == nullptr) {
+            AuthRequest::deserialize(buffer, auth_request);
+            handle_auth_request(auth_request);
+        }
+        else {
+            enet_peer_disconnect(m_server, 0U);
         }
 
-        enet_peer_disconnect(m_server, 0U);
         return;
     }
 
-    if(packet_type == AuthChallengeResult::ID) {
-        if(channel == PROTOCOL_AUTHCHAN && m_aes_context == nullptr) {
-            AuthChallengeResult::deserialize(buffer, auth_result);
-            handle_auth_challenge_result(auth_result);
-            return;
+    if(packet_type == AuthResult::ID) {
+        if(m_aes_context == nullptr) {
+            AuthResult::deserialize(buffer, auth_result);
+            handle_auth_result(auth_result);
+        }
+        else {
+            enet_peer_disconnect(m_server, 0U);
         }
 
-        enet_peer_disconnect(m_server, 0U);
         return;
     }
 
     if(m_aes_context) {
         switch(packet_type) {
-            case SystemMessage::ID:
-                SystemMessage::deserialize(m_aes_context, buffer, system_message);
-                handle_system_message(system_message);
+            case Notification::ID:
+                Notification::deserialize(m_aes_context, buffer, notification);
+                handle_notification(notification);
                 break;
 
             case TextMessage::ID:
@@ -269,73 +253,70 @@ void Session::handle_packet(const ENetPacket* packet, quint32 channel)
     }
 }
 
-void Session::handle_auth_challenge_request(const AuthChallengeRequest& packet)
+void Session::handle_auth_request(const AuthRequest& packet)
 {
     assert(m_server);
     assert(m_aes_context == nullptr);
 
-    auto& public_key = Identity::instance->public_key();
-    auto& private_key = Identity::instance->private_key();
+    auto& public_key = Settings::instance->public_key_buffer();
+    auto& private_key = Settings::instance->private_key_buffer();
 
     thread_local WriteBuffer buffer;
-    thread_local AuthChallengeResponse response;
+    thread_local AuthResponse response;
 
-    response.client_pkey = public_key;
-    response.username = m_desired_username.toStdString();
-    ed25519::sign(public_key, private_key, packet.challenge_data, response.signature);
+    response.public_key = public_key;
+    response.desired_username = Settings::instance->username().toStdString();
+    ed25519::sign(public_key, private_key, packet.challenge, response.signature);
 
     buffer.reset();
-    buffer.write<std::uint32_t>(AuthChallengeResponse::ID);
-    AuthChallengeResponse::serialize(buffer, response);
+    buffer.write<std::uint32_t>(AuthResponse::ID);
+    AuthResponse::serialize(buffer, response);
 
-    enet_peer_send(m_server, PROTOCOL_AUTHCHAN, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+    enet_peer_send(m_server, 0U, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
-void Session::handle_auth_challenge_result(const AuthChallengeResult& packet)
+void Session::handle_auth_result(const AuthResult& packet)
 {
     assert(m_server);
     assert(m_aes_context == nullptr);
 
-    if(packet.status == AuthChallengeResult::E_OK) {
-        ed25519::exch_buffer shared_secret;
-        ed25519::generate_exch(Identity::instance->private_key(), packet.server_pkey, shared_secret);
-        aes256::create(m_aes_context, shared_secret);
+    ed25519::exch_buffer shared_secret;
+    ed25519::generate_exch(Settings::instance->private_key_buffer(), packet.public_key, shared_secret);
+    aes256::create(m_aes_context, shared_secret);
 
-        m_username = QString::fromStdString(packet.username);
-    }
-    else {
-        QString message;
+    m_assigned_username = QString::fromStdString(packet.assigned_username);
 
-        switch(packet.status) {
-            case AuthChallengeResult::E_CRED:
-                message = tr("invalid credentials");
-                break;
-
-            case AuthChallengeResult::E_TIME:
-                message = tr("authentication timeout");
-                break;
-
-            case AuthChallengeResult::E_UNREC:
-                message = tr("unrecognized public key");
-                break;
-
-            default:
-                message = tr("unknown error");
-                break;
-        }
-
-        add_system_message(tr("Auth failed: %1").arg(message));
-    }
+    emit connection_changed();
 }
 
-void Session::handle_system_message(const SystemMessage& packet)
+void Session::handle_notification(const Notification& packet)
 {
     assert(m_aes_context);
 
     auto timestamp = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(packet.timestamp), QTimeZone::UTC);
-    auto message = QString::fromStdString(packet.message);
+    auto text = QString::fromStdString(packet.text);
 
-    emit system_message_received(timestamp, message);
+    switch(packet.type) {
+        case Notification::T_USER_JOIN:
+            add_notification_user_join(timestamp, text);
+            break;
+
+        case Notification::T_USER_LEFT:
+            add_notification_user_left(timestamp, text);
+            break;
+
+        case Notification::T_PERM_MODF:
+            add_notification_permissions_modified(timestamp);
+            break;
+
+        case Notification::T_TEXT_MESG:
+            add_notification_generic(timestamp, text);
+            break;
+
+        default:
+            qDebug() << "Received unknown notification type:" << packet.type;
+            return;
+    }
 }
 
 void Session::handle_text_message(const TextMessage& packet)
@@ -343,8 +324,8 @@ void Session::handle_text_message(const TextMessage& packet)
     assert(m_aes_context);
 
     auto timestamp = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(packet.timestamp), QTimeZone::UTC);
-    auto sender = QString::fromStdString(packet.username);
-    auto message = QString::fromStdString(packet.message);
+    auto username = QString::fromStdString(packet.username.substr(0U, TextMessage::MAX_USERNAME_LENGTH));
+    auto message = QString::fromStdString(packet.message.substr(0U, TextMessage::MAX_MESSAGE_LENGTH));
 
-    emit text_message_received(timestamp, sender, message);
+    emit text_message_received(timestamp, username, message);
 }

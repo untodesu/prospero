@@ -41,6 +41,18 @@ void AuthResponse::serialize(WriteBuffer& buffer, const AuthResponse& packet)
     buffer.write<std::string_view>(packet.desired_username);
 }
 
+void AuthResult::deserialize(ReadBuffer& buffer, AuthResult& packet)
+{
+    buffer.read(packet.public_key.data(), packet.public_key.size());
+    packet.assigned_username = buffer.read<std::string>();
+}
+
+void AuthResult::serialize(WriteBuffer& buffer, const AuthResult& packet)
+{
+    buffer.write(packet.public_key.data(), packet.public_key.size());
+    buffer.write<std::string_view>(packet.assigned_username);
+}
+
 void Notification::deserialize(aes256::context& context, ReadBuffer& buffer, Notification& packet)
 {
     auto payload = ReadBuffer::decrypt(context, buffer);
@@ -71,8 +83,8 @@ void TextMessage::serialize(aes256::context& context, WriteBuffer& buffer, const
 {
     WriteBuffer payload;
     payload.write<std::uint64_t>(packet.timestamp);
-    payload.write<std::string_view>(packet.username.substr(MAX_USERNAME_LENGTH));
-    payload.write<std::string_view>(packet.message.substr(MAX_MESSAGE_LENGTH));
+    payload.write<std::string_view>(packet.username.substr(0U, MAX_USERNAME_LENGTH));
+    payload.write<std::string_view>(packet.message.substr(0U, MAX_MESSAGE_LENGTH));
 
     buffer.write(WriteBuffer::encrypt(context, payload));
 }

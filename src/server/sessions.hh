@@ -18,6 +18,7 @@ struct TextMessage;
 struct Session final {
     ENetPeer* peer { nullptr };
     aes256::context aes_context { nullptr };
+    ed25519::pkey_buffer public_key;
     ed25519::seed_buffer challenge;
     std::uint64_t auth_timestamp;
     std::string username;
@@ -47,6 +48,7 @@ namespace sessions
 {
 Session* lookup(ENetPeer* peer);
 Session* lookup(const std::string& username);
+Session* lookup(const ed25519::pkey_buffer& public_key);
 } // namespace sessions
 
 namespace sessions

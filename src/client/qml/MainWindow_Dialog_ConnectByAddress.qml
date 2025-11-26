@@ -5,7 +5,7 @@ import QtQuick.Layouts 1.15
 Dialog {
     id: connect_by_address_dialog
     
-    width: 480
+    width: 320
 
     x: 0.5 * (parent.width - width)
     y: 0.5 * (parent.height - height)
@@ -47,6 +47,8 @@ Dialog {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
+                Layout.minimumHeight: font.pixelSize + 8
+
                 placeholderText: qsTr("address or address:port")
 
                 font.family: g_monospace.family
@@ -80,9 +82,15 @@ Dialog {
 
                 onClicked: {
                     if(address_field.text.length > 0) {
-                        console.log(address_field.text);
+                        address_field.enabled = false;
+                        connect_button.enabled = false;
+
                         g_session.connect_to_host(address_field.text);
+
                         connect_by_address_dialog.close();
+
+                        address_field.enabled = true;
+                        connect_button.enabled = true;
                     }
                 }
 

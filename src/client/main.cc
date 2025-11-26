@@ -8,8 +8,8 @@
 #include "core/exception.hh"
 
 #include "client/clipboard.hh"
-#include "client/identity.hh"
 #include "client/session.hh"
+#include "client/settings.hh"
 #include "client/version.hh"
 
 int main(int argc, char** argv)
@@ -43,16 +43,18 @@ int main(int argc, char** argv)
         auto qml = new QQmlApplicationEngine();
 
         Clipboard::instance = new Clipboard(&app);
-        Identity::instance = new Identity(&app);
         Session::instance = new Session(&app);
+        Settings::instance = new Settings(&app);
         Version::instance = new Version(&app);
 
         auto context = qml->rootContext();
+
         context->setContextProperty("g_clipboard", Clipboard::instance);
-        context->setContextProperty("g_identity", Identity::instance);
-        context->setContextProperty("g_monospace", roboto_mono_font);
+        context->setContextProperty("g_settings", Settings::instance);
         context->setContextProperty("g_session", Session::instance);
         context->setContextProperty("g_version", Version::instance);
+
+        context->setContextProperty("g_monospace", roboto_mono_font);
 
         qml->load(QUrl(QStringLiteral("qrc:/qml/MainWindow.qml")));
 
@@ -61,7 +63,7 @@ int main(int argc, char** argv)
         delete qml;
 
         delete Clipboard::instance;
-        delete Identity::instance;
+        delete Settings::instance;
         delete Session::instance;
         delete Version::instance;
 

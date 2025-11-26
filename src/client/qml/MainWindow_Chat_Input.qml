@@ -27,7 +27,6 @@ RowLayout {
 
             font.family: g_monospace.family
 
-
             placeholderText: qsTr("Type a message...")
 
             wrapMode: TextArea.Wrap
@@ -66,9 +65,7 @@ RowLayout {
         Layout.preferredWidth: height
         Layout.alignment: Qt.AlignTop
 
-        Layout.minimumHeight: g_monospace.pixelSize * 2
-        Layout.maximumHeight: g_monospace.pixelSize * 2
-        Layout.preferredHeight: message_scroll_view.height
+        height: g_monospace.pixelSize * 2
 
         text: "\u25B6" // Unicode black right-pointing triangle
 

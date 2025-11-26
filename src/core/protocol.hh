@@ -70,7 +70,7 @@ struct Notification final : public BasePacket<PacketType::Notification> {
 
 struct TextMessage final : public BasePacket<PacketType::TextMessage> {
     constexpr static std::size_t MAX_USERNAME_LENGTH = 96U;
-    constexpr static std::size_t MAX_MESSAGE_LENGTH = 1600U;
+    constexpr static std::size_t MAX_MESSAGE_LENGTH = 256U;
 
     static void deserialize(aes256::context& context, ReadBuffer& buffer, TextMessage& packet);
     static void serialize(aes256::context& context, WriteBuffer& buffer, const TextMessage& packet);
