@@ -25,6 +25,20 @@ static void signal_handler(int signal_num)
 
 int main(int argc, char** argv)
 {
+#ifdef _WIN32
+    auto stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    auto stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+
+    DWORD stdout_mode, stderr_mode;
+    GetConsoleMode(stdout_handle, &stdout_mode);
+    GetConsoleMode(stderr_handle, &stderr_mode);
+
+    SetConsoleMode(stdout_handle, ENABLE_VIRTUAL_TERMINAL_PROCESSING | stdout_mode);
+    SetConsoleMode(stderr_handle, ENABLE_VIRTUAL_TERMINAL_PROCESSING | stderr_mode);
+
+    SetConsoleOutputCP(CP_UTF8);
+#endif
+
     uulog::add_sink(&uulog::builtin::stderr_ansi);
 
     LOG_INFO("prospero server {}", version::semver);

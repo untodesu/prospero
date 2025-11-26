@@ -10,6 +10,7 @@
 #include "core/buffer.hh"
 #include "core/exception.hh"
 #include "core/protocol.hh"
+#include "core/version.hh"
 
 #include "client/settings.hh"
 
@@ -257,6 +258,32 @@ void Session::handle_auth_request(const AuthRequest& packet)
 {
     assert(m_server);
     assert(m_aes_context == nullptr);
+
+    auto client_version_string = QStringLiteral("%1.%2.%3").arg(version::major).arg(version::minor).arg(version::patch);
+    auto server_version_string = QStringLiteral("%1.%2.%3").arg(packet.version_major).arg(packet.version_minor).arg(packet.version_patch);
+
+    if(version::major < packet.version_major) {
+        auto message = tr("Outdated client! Server runs on %1").arg(server_version_string);
+        add_notification_generic(QDateTime::currentDateTime(), message);
+        enet_peer_disconnect(m_server, 0U);
+        return;
+    }
+
+    if(version::major > packet.version_major) {
+        auto message = tr("Outdated server! Server runs on %1").arg(client_version_string);
+        add_notification_generic(QDateTime::currentDateTime(), message);
+        enet_peer_disconnect(m_server, 0U);
+        return;
+    }
+
+    auto version_full_compatible = true;
+    version_full_compatible = version_full_compatible && version::minor == packet.version_minor;
+    version_full_compatible = version_full_compatible && version::patch == packet.version_patch;
+
+    if(!version_full_compatible) {
+        auto message = tr("Potentially incompatible versions [SV %1 // CL %2]").arg(server_version_string).arg(client_version_string);
+        add_notification_generic(QDateTime::currentDateTime(), message);
+    }
 
     auto& public_key = Settings::instance->public_key_buffer();
     auto& private_key = Settings::instance->private_key_buffer();
