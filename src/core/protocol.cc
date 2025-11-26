@@ -9,60 +9,52 @@
 
 #include "core/buffer.hh"
 
-void AuthChallengeRequest::deserialize(ReadBuffer& buffer, AuthChallengeRequest& packet)
+void AuthRequest::deserialize(ReadBuffer& buffer, AuthRequest& packet)
 {
-    buffer.read(packet.challenge_data.data(), packet.challenge_data.size());
-    packet.challenge_timestamp = buffer.read<std::uint64_t>();
-    packet.protocol_version = buffer.read<std::uint32_t>();
+    packet.version_major = buffer.read<std::uint32_t>();
+    packet.version_minor = buffer.read<std::uint32_t>();
+    packet.version_patch = buffer.read<std::uint32_t>();
+    packet.auth_timestamp = buffer.read<std::uint64_t>();
+    buffer.read(packet.challenge.data(), packet.challenge.size());
 }
 
-void AuthChallengeRequest::serialize(WriteBuffer& buffer, const AuthChallengeRequest& packet)
+void AuthRequest::serialize(WriteBuffer& buffer, const AuthRequest& packet)
 {
-    buffer.write(packet.challenge_data.data(), packet.challenge_data.size());
-    buffer.write<std::uint64_t>(packet.challenge_timestamp);
-    buffer.write<std::uint32_t>(packet.protocol_version);
+    buffer.write<std::uint32_t>(packet.version_major);
+    buffer.write<std::uint32_t>(packet.version_minor);
+    buffer.write<std::uint32_t>(packet.version_patch);
+    buffer.write<std::uint64_t>(packet.auth_timestamp);
+    buffer.write(packet.challenge.data(), packet.challenge.size());
 }
 
-void AuthChallengeResponse::deserialize(ReadBuffer& buffer, AuthChallengeResponse& packet)
+void AuthResponse::deserialize(ReadBuffer& buffer, AuthResponse& packet)
 {
-    buffer.read(packet.client_pkey.data(), packet.client_pkey.size());
+    buffer.read(packet.public_key.data(), packet.public_key.size());
     buffer.read(packet.signature.data(), packet.signature.size());
-    packet.username = buffer.read<std::string>();
+    packet.desired_username = buffer.read<std::string>();
 }
 
-void AuthChallengeResponse::serialize(WriteBuffer& buffer, const AuthChallengeResponse& packet)
+void AuthResponse::serialize(WriteBuffer& buffer, const AuthResponse& packet)
 {
-    buffer.write(packet.client_pkey.data(), packet.client_pkey.size());
+    buffer.write(packet.public_key.data(), packet.public_key.size());
     buffer.write(packet.signature.data(), packet.signature.size());
-    buffer.write<std::string_view>(packet.username);
+    buffer.write<std::string_view>(packet.desired_username);
 }
 
-void AuthChallengeResult::deserialize(ReadBuffer& buffer, AuthChallengeResult& packet)
-{
-    packet.status = buffer.read<std::uint32_t>();
-    buffer.read(packet.server_pkey.data(), packet.server_pkey.size());
-    packet.username = buffer.read<std::string>();
-}
-
-void AuthChallengeResult::serialize(WriteBuffer& buffer, const AuthChallengeResult& packet)
-{
-    buffer.write<std::uint32_t>(packet.status);
-    buffer.write(packet.server_pkey.data(), packet.server_pkey.size());
-    buffer.write<std::string_view>(packet.username);
-}
-
-void SystemMessage::deserialize(aes256::context& context, ReadBuffer& buffer, SystemMessage& packet)
+void Notification::deserialize(aes256::context& context, ReadBuffer& buffer, Notification& packet)
 {
     auto payload = ReadBuffer::decrypt(context, buffer);
     packet.timestamp = payload.read<std::uint64_t>();
-    packet.message = payload.read<std::string>();
+    packet.type = payload.read<std::uint32_t>();
+    packet.text = payload.read<std::string>();
 }
 
-void SystemMessage::serialize(aes256::context& context, WriteBuffer& buffer, const SystemMessage& packet)
+void Notification::serialize(aes256::context& context, WriteBuffer& buffer, const Notification& packet)
 {
     WriteBuffer payload;
     payload.write<std::uint64_t>(packet.timestamp);
-    payload.write<std::string_view>(packet.message);
+    payload.write<std::uint32_t>(packet.type);
+    payload.write<std::string_view>(packet.text);
 
     buffer.write(WriteBuffer::encrypt(context, payload));
 }
@@ -79,8 +71,8 @@ void TextMessage::serialize(aes256::context& context, WriteBuffer& buffer, const
 {
     WriteBuffer payload;
     payload.write<std::uint64_t>(packet.timestamp);
-    payload.write<std::string_view>(packet.username);
-    payload.write<std::string_view>(packet.message);
+    payload.write<std::string_view>(packet.username.substr(MAX_USERNAME_LENGTH));
+    payload.write<std::string_view>(packet.message.substr(MAX_MESSAGE_LENGTH));
 
     buffer.write(WriteBuffer::encrypt(context, payload));
 }

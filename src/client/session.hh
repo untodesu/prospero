@@ -9,17 +9,16 @@
 
 #include "core/aes256.hh"
 
-struct AuthChallengeRequest;
-struct AuthChallengeResult;
-struct SystemMessage;
+struct AuthRequest;
+struct AuthResult;
+struct Notification;
 struct TextMessage;
 
 class Session final : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QString desired_username READ desired_username WRITE set_desired_username NOTIFY desired_username_changed)
     Q_PROPERTY(bool is_connected READ is_connected NOTIFY connection_changed)
-    Q_PROPERTY(bool is_authenticated READ is_authenticated)
-    Q_PROPERTY(QString username READ username)
+    Q_PROPERTY(QString assigned_username READ assigned_username NOTIFY connection_changed)
+    Q_PROPERTY(QString desired_username READ desired_username WRITE set_desired_username NOTIFY desired_username_changed)
 
 public:
     static Session* instance;
@@ -27,9 +26,22 @@ public:
     explicit Session(QObject* parent = nullptr);
     virtual ~Session(void) override;
 
+    bool is_connected(void) const;
+    const QString& assigned_username(void) const;
+    const QString& desired_username(void) const;
+    void set_desired_username(const QString& username);
+
+public:
     Q_INVOKABLE void connect_to_host(const QString& full_address);
     Q_INVOKABLE void connect_to_host(const QLatin1String& host, quint16 port);
     Q_INVOKABLE void disconnect_from_host(void);
+
+    Q_INVOKABLE void add_notification_user_join(const QDateTime& timestamp, const QString& username);
+    Q_INVOKABLE void add_notification_user_left(const QDateTime& timestamp, const QString& username);
+    Q_INVOKABLE void add_notification_permissions_modified(const QDateTime& timestamp);
+    Q_INVOKABLE void add_notification_generic(const QDateTime& timestamp, const QString& message);
+
+    Q_INVOKABLE void send_text_message(const QString& message);
 
     Q_INVOKABLE void add_system_message(const QString& message);
     Q_INVOKABLE void send_text_message(const QString& message);

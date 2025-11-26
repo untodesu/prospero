@@ -10,16 +10,16 @@
 #include "core/aes256.hh"
 #include "core/ed25519.hh"
 
-struct AuthChallengeRequest;
-struct AuthChallengeResult;
-struct SystemMessage;
+struct AuthRequest;
+struct AuthResult;
+struct Notification;
 struct TextMessage;
 
 struct Session final {
-    ENetPeer* session_peer { nullptr };
-    ed25519::seed_buffer challenge;
-    std::uint64_t challenge_timestamp;
+    ENetPeer* peer { nullptr };
     aes256::context aes_context { nullptr };
+    ed25519::seed_buffer challenge;
+    std::uint64_t auth_timestamp;
     std::string username;
 };
 
@@ -40,7 +40,7 @@ namespace sessions
 {
 void create(ENetPeer* peer);
 void remove(ENetPeer* peer);
-void update(ENetPeer* peer, const ENetPacket* packet, std::uint32_t channel);
+void update(ENetPeer* peer, const ENetPacket* packet);
 } // namespace sessions
 
 namespace sessions
@@ -51,16 +51,21 @@ Session* lookup(const std::string& username);
 
 namespace sessions
 {
-void send_packet(Session* session, const AuthChallengeRequest& packet);
-void send_packet(Session* session, const AuthChallengeResult& packet);
-void send_packet(Session* session, const SystemMessage& packet);
+void send_packet(Session* session, const AuthRequest& packet);
+void send_packet(Session* session, const AuthResult& packet);
+void send_packet(Session* session, const Notification& packet);
 void send_packet(Session* session, const TextMessage& packet);
 } // namespace sessions
 
 namespace sessions
 {
-void broadcast_packet(const SystemMessage& packet);
+void broadcast_packet(const Notification& packet);
 void broadcast_packet(const TextMessage& packet);
+} // namespace sessions
+
+namespace sessions
+{
+void broadcast_notification(std::uint32_t type, std::string_view text);
 } // namespace sessions
 
 #endif

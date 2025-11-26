@@ -24,7 +24,7 @@ void host::init(void)
     address.host = ENET_HOST_ANY;
     address.port = settings::host::udp_port;
 
-    host::instance = enet_host_create(&address, settings::host::max_peers, PROTOCOL_MAXCHAN, 0U, 0U);
+    host::instance = enet_host_create(&address, settings::host::max_peers, 1U, 0U, 0U);
 
     if(host::instance == nullptr) {
         throw core::runtime_error("failed to create a server host");
@@ -54,7 +54,7 @@ void host::update(void)
                 break;
 
             case ENET_EVENT_TYPE_RECEIVE:
-                sessions::update(event.peer, event.packet, event.channelID);
+                sessions::update(event.peer, event.packet);
                 enet_packet_destroy(event.packet);
                 break;
         }
