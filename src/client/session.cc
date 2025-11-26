@@ -8,6 +8,7 @@
 #include "client/session.hh"
 
 #include "core/buffer.hh"
+#include "core/config.hh"
 #include "core/exception.hh"
 #include "core/protocol.hh"
 
@@ -17,6 +18,11 @@ Session* Session::instance = nullptr;
 
 Session::Session(QObject* parent) : QObject(parent)
 {
+    std::filesystem::path app_data_directory(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString());
+    std::filesystem::create_directories(app_data_directory);
+
+    m_config_path = app_data_directory / "client.conf";
+
     m_aes_context = nullptr;
 
     m_host_timer = new QTimer(this);
@@ -33,6 +39,8 @@ Session::Session(QObject* parent) : QObject(parent)
     connect(m_host_timer, &QTimer::timeout, this, &Session::update_host);
 
     reset_session_data();
+
+    load_from_config();
 }
 
 Session::~Session(void)
@@ -112,6 +120,22 @@ void Session::send_text_message(const QString& message)
     enet_peer_send(m_server, Session::random_channel(), enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
+Q_INVOKABLE const QString& Session::desired_username(void) const
+{
+    return m_desired_username;
+}
+
+Q_INVOKABLE void Session::set_desired_username(const QString& username)
+{
+    if(m_desired_username.compare(username)) {
+        m_desired_username = username;
+
+        save_to_config();
+
+        emit desired_username_changed();
+    }
+}
+
 bool Session::is_connected(void) const
 {
     return m_server && m_server->state == ENET_PEER_STATE_CONNECTED;
@@ -160,6 +184,22 @@ std::uint32_t Session::random_channel(void)
     auto generator = QRandomGenerator::system();
 
     return generator->bounded(0U, PROTOCOL_MAXCHAN - 1U);
+}
+
+void Session::load_from_config(void)
+{
+    Config config(m_config_path);
+
+    m_desired_username = QString::fromStdString(std::string(config.value<std::string_view>("desired_username", "prosperoclient")));
+}
+
+void Session::save_to_config(void)
+{
+    Config config;
+
+    config.set_value<std::string_view>("desired_username", m_desired_username.toStdString());
+
+    config.write(m_config_path);
 }
 
 void Session::reset_session_data(void)
@@ -241,7 +281,7 @@ void Session::handle_auth_challenge_request(const AuthChallengeRequest& packet)
     thread_local AuthChallengeResponse response;
 
     response.client_pkey = public_key;
-    response.username = std::string("prosperoclient"); // TODO: make configurable
+    response.username = m_desired_username.toStdString();
     ed25519::sign(public_key, private_key, packet.challenge_data, response.signature);
 
     buffer.reset();

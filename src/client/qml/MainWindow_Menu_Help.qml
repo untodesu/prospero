@@ -11,6 +11,9 @@ Menu {
         onTriggered: {
             console.log("TODO");
         }
+
+        Accessible.name: qsTr("Open Documentation")
+        Accessible.description: qsTr("Opens the application documentation in the default web browser")
     }
     
     MenuSeparator {}
@@ -21,5 +24,8 @@ Menu {
         onTriggered: {
             about_dialog.open();
         }
+
+        Accessible.name: qsTr("About Application")
+        Accessible.description: qsTr("Opens the about dialog displaying application information")
     }
 }

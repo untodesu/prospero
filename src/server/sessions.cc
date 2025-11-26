@@ -9,6 +9,7 @@
 
 #include "core/buffer.hh"
 #include "core/protocol.hh"
+#include "core/strtools.hh"
 #include "core/unixtime.hh"
 
 #include "server/host.hh"
@@ -38,8 +39,8 @@ static void reset_session_data(Session* session)
 
 static std::string generate_username(std::string_view desired_username)
 {
-    std::string username;
-    username.reserve(64U);
+    std::string filtered_username;
+    filtered_username.reserve(64U);
 
     for(std::size_t i = 0U; i < desired_username.size() && i < 64U; ++i) {
         auto is_valid_character = false;
@@ -49,14 +50,19 @@ static std::string generate_username(std::string_view desired_username)
         is_valid_character = is_valid_character || desired_username[i] == '.';        // allow usernames like johnny.dreeslow
 
         if(is_valid_character) {
-            username.push_back(desired_username[i]);
+            filtered_username.push_back(desired_username[i]);
         }
     }
 
+    if(filtered_username.empty()) {
+        filtered_username = "prosperoclient";
+    }
+
+    std::string username = filtered_username;
     unsigned long suffix = 1U;
 
     while(sessions::username_set.contains(username)) {
-        username = std::format("{}{}", desired_username, suffix);
+        username = std::format("{}{}", filtered_username, suffix);
         suffix += 1U;
     }
 

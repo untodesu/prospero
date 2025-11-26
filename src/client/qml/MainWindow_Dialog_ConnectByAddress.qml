@@ -60,6 +60,9 @@ Dialog {
                         event.accepted = true;
                     }
                 }
+
+                Accessible.name: qsTr("Connect by Address Input Field")
+                Accessible.description: qsTr("Field to type the address or address and port of the host to connect to")
             }
 
             Button {
@@ -82,6 +85,9 @@ Dialog {
                         connect_by_address_dialog.close();
                     }
                 }
+
+                Accessible.name: qsTr("Connect by Address Button")
+                Accessible.description: qsTr("Button to connect to the host specified in the input field")
             }
         }
     }

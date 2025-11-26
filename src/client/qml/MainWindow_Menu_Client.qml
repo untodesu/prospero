@@ -18,6 +18,9 @@ Menu {
             onTriggered: {
                 connect_by_address_dialog.open();
             }
+
+            Accessible.name: qsTr("Connect by Address")
+            Accessible.description: qsTr("Open dialog to connect to a host by specifying its address")
         }
 
         Action {
@@ -26,6 +29,9 @@ Menu {
             onTriggered: {
                 // TODO
             }
+
+            Accessible.name: qsTr("Connect by Bookmark")
+            Accessible.description: qsTr("Open dialog to connect to a host by selecting a stored server address")
         }
     }
 
@@ -37,6 +43,9 @@ Menu {
         onTriggered: {
             g_session.disconnect_from_host();
         }
+
+        Accessible.name: qsTr("Disconnect from Host")
+        Accessible.description: qsTr("Disconnects the client from the currently connected host")    
     }
 
     MenuSeparator {}
@@ -47,6 +56,9 @@ Menu {
         onTriggered: {
             settings_dialog.open();
         }
+
+        Accessible.name: qsTr("Open Settings")
+        Accessible.description: qsTr("Open the settings dialog to configure application preferences")
     }
     
     MenuSeparator {}
@@ -59,6 +71,9 @@ Menu {
 
             Qt.quit();
         }
+
+        Accessible.name: qsTr("Quit Application")
+        Accessible.description: qsTr("Quits the application")
     }
 }
 

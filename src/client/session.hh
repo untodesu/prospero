@@ -16,6 +16,7 @@ struct TextMessage;
 
 class Session final : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QString desired_username READ desired_username WRITE set_desired_username NOTIFY desired_username_changed)
     Q_PROPERTY(bool is_connected READ is_connected NOTIFY connection_changed)
     Q_PROPERTY(bool is_authenticated READ is_authenticated)
     Q_PROPERTY(QString username READ username)
@@ -33,11 +34,15 @@ public:
     Q_INVOKABLE void add_system_message(const QString& message);
     Q_INVOKABLE void send_text_message(const QString& message);
 
+    Q_INVOKABLE const QString& desired_username(void) const;
+    Q_INVOKABLE void set_desired_username(const QString& username);
+
     Q_INVOKABLE bool is_connected(void) const;
     Q_INVOKABLE bool is_authenticated(void) const;
     Q_INVOKABLE const QString& username(void) const;
 
 signals:
+    void desired_username_changed(void);
     void connection_changed(bool is_connected);
     void system_message_received(const QDateTime& timetamp, const QString& message);
     void text_message_received(const QDateTime& timetamp, const QString& sender, const QString& message);
@@ -48,6 +53,9 @@ private slots:
 private:
     static std::uint32_t random_channel(void);
 
+    void load_from_config(void);
+    void save_to_config(void);
+
     void reset_session_data(void);
 
     void handle_packet(const ENetPacket* packet, quint32 channel);
@@ -56,6 +64,10 @@ private:
     void handle_auth_challenge_result(const AuthChallengeResult& packet);
     void handle_system_message(const SystemMessage& packet);
     void handle_text_message(const TextMessage& packet);
+
+    std::filesystem::path m_config_path;
+
+    QString m_desired_username;
 
     ENetHost* m_host;
     QTimer* m_host_timer;

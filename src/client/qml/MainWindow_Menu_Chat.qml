@@ -11,5 +11,8 @@ Menu {
         onTriggered: {
             main_window_chat.clear();
         }
+
+        Accessible.name: qsTr("Clear Chat")
+        Accessible.description: qsTr("Clears all messages from the chat window")
     }
 }

@@ -30,9 +30,6 @@ RowLayout {
 
             placeholderText: qsTr("Type a message...")
 
-            Accessible.name: qsTr("Message Input Field")
-            Accessible.description: qsTr("Field to type your message before sending")
-
             wrapMode: TextArea.Wrap
 
             Keys.onPressed: function (event) {
@@ -47,6 +44,9 @@ RowLayout {
 
             horizontalAlignment: TextArea.AlignLeft
             verticalAlignment: TextArea.AlignVCenter
+            
+            Accessible.name: qsTr("Message Input Field")
+            Accessible.description: qsTr("Field to type your message before sending")
         }
 
         ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -72,9 +72,6 @@ RowLayout {
 
         text: "\u25B6" // Unicode black right-pointing triangle
 
-        Accessible.name: qsTr("Send Message")
-        Accessible.description: qsTr("Sends the message typed in the input field")
-
         onClicked: {
             let message = message_input.text.trim();
 
@@ -84,5 +81,8 @@ RowLayout {
                 message_input.clear();
             }
         }
+
+        Accessible.name: qsTr("Send Message Button")
+        Accessible.description: qsTr("Button to send the typed message")
     }
 }
