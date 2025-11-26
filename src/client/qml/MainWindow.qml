@@ -3,46 +3,38 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 ApplicationWindow {
-    readonly property int initial_width: 640
-    readonly property int initial_height: 480
-
     id: main_window
 
     title: qsTr("Prospero")
 
-    width: initial_width
-    height: initial_height
+    minimumWidth: 640
+    minimumHeight: 480
+
+    width: minimumWidth
+    height: minimumHeight
+
     visible: true
 
-    minimumWidth: initial_width
-    minimumHeight: initial_height
-
     menuBar: MainWindow_Menu {
-        id: menu
+        id: main_window_menu
     }
 
-    ColumnLayout {
+    MainWindow_Chat {
+        id: main_window_chat
+
         anchors.fill: parent
         anchors.margins: 4
-
-        MainWindow_Chat {
-            id: chat
-        }
-
-        MainWindow_Input {
-            id: input
-        }
     }
 
-    Dialog_About {
+    MainWindow_Dialog_About {
         id: about_dialog
     }
-    
-    Dialog_ConnectDirectly {
-        id: direct_connect_dialog
+
+    MainWindow_Dialog_ConnectByAddress {
+        id: connect_by_address_dialog
     }
 
-    Dialog_Identity {
-        id: identity_dialog
+    MainWindow_Dialog_Settings {
+        id: settings_dialog
     }
 }

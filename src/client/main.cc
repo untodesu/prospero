@@ -35,6 +35,9 @@ int main(int argc, char** argv)
         QFont roboto_regular_font(QFontDatabase::applicationFontFamilies(roboto_regular_id).constFirst());
         QFont roboto_mono_font(QFontDatabase::applicationFontFamilies(roboto_mono_id).constFirst());
 
+        roboto_regular_font.setPointSize(11);
+        roboto_mono_font.setPointSize(11);
+
         app.setFont(roboto_regular_font);
 
         auto qml = new QQmlApplicationEngine();

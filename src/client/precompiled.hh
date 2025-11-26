@@ -55,6 +55,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
+#include <QRandomGenerator>
 #include <QStandardPaths>
 #include <QTimer>
 #include <QtGlobal>

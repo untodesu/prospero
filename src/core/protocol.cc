@@ -51,20 +51,6 @@ void AuthChallengeResult::serialize(WriteBuffer& buffer, const AuthChallengeResu
     buffer.write<std::string_view>(packet.username);
 }
 
-void ChannelDefinition::deserialize(aes256::context& context, ReadBuffer& buffer, ChannelDefinition& packet)
-{
-    auto payload = ReadBuffer::decrypt(context, buffer);
-    packet.name = payload.read<std::string>();
-}
-
-void ChannelDefinition::serialize(aes256::context& context, WriteBuffer& buffer, const ChannelDefinition& packet)
-{
-    WriteBuffer payload;
-    payload.write<std::string_view>(packet.name);
-
-    buffer.write(WriteBuffer::encrypt(context, payload));
-}
-
 void SystemMessage::deserialize(aes256::context& context, ReadBuffer& buffer, SystemMessage& packet)
 {
     auto payload = ReadBuffer::decrypt(context, buffer);

@@ -23,7 +23,6 @@ enum class PacketType : std::uint32_t {
     AuthChallengeRequest = 1U,
     AuthChallengeResponse,
     AuthChallengeResult,
-    ChannelDefinition,
     SystemMessage,
     TextMessage,
 };
@@ -72,17 +71,7 @@ struct AuthChallengeResult final : public BasePacket<PacketType::AuthChallengeRe
     std::string username;             ///< Assigned username on E_OK, empty otherwise
 };
 
-/// Sent on specific channel (so the channel ID is inferred through ENet's API) by the server
-/// to update clients about a channel's definition; if no packet is sent on a specific channel, the
-/// client should assume the channel with that ID is reserved and is not to be communicated through
-struct ChannelDefinition final : public BasePacket<PacketType::ChannelDefinition> {
-    static void deserialize(aes256::context& context, ReadBuffer& buffer, ChannelDefinition& packet);
-    static void serialize(aes256::context& context, WriteBuffer& buffer, const ChannelDefinition& packet);
-
-    std::string name; ///< Channel name
-};
-
-/// Sent on PROTOCOL_AUTHCHAN by the server to broadcast a system message for all the
+/// Sent on a random channel by the server to broadcast a system message for all the
 /// clients currently present in the channel; this can be used as a response to admin commands
 struct SystemMessage final : public BasePacket<PacketType::SystemMessage> {
     static void deserialize(aes256::context& context, ReadBuffer& buffer, SystemMessage& packet);
@@ -92,7 +81,7 @@ struct SystemMessage final : public BasePacket<PacketType::SystemMessage> {
     std::string message;     ///< System message text
 };
 
-/// Sent on a specific channel by a client to broadcast a text message to all the
+/// Sent on a random channel by a client to broadcast a text message to all the
 /// other clients currently present in the channel
 struct TextMessage final : public BasePacket<PacketType::TextMessage> {
     static void deserialize(aes256::context& context, ReadBuffer& buffer, TextMessage& packet);

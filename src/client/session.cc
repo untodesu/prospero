@@ -32,8 +32,6 @@ Session::Session(QObject* parent) : QObject(parent)
 
     connect(m_host_timer, &QTimer::timeout, this, &Session::update_host);
 
-    m_channels.resize(PROTOCOL_MAXCHAN, QString());
-
     reset_session_data();
 }
 
@@ -42,6 +40,10 @@ Session::~Session(void)
     if(m_server) {
         enet_peer_disconnect(m_server, 0U);
         enet_host_flush(m_host);
+
+        while(0 < enet_host_service(m_host, nullptr, 10)) {
+            // empty
+        }
     }
 }
 
@@ -86,11 +88,15 @@ void Session::disconnect_from_host(void)
     }
 }
 
-void Session::send_text_message(quint32 channel, const QString& message)
+void Session::add_system_message(const QString& message)
+{
+    emit system_message_received(QDateTime::currentDateTime(), message);
+}
+
+void Session::send_text_message(const QString& message)
 {
     assert(m_server);
     assert(m_aes_context);
-    assert(channel < PROTOCOL_MAXCHAN);
 
     thread_local WriteBuffer buffer;
     thread_local TextMessage packet;
@@ -103,7 +109,7 @@ void Session::send_text_message(quint32 channel, const QString& message)
     buffer.write<std::uint32_t>(TextMessage::ID);
     TextMessage::serialize(m_aes_context, buffer, packet);
 
-    enet_peer_send(m_server, channel, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+    enet_peer_send(m_server, Session::random_channel(), enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
 bool Session::is_connected(void) const
@@ -119,30 +125,6 @@ bool Session::is_authenticated(void) const
 const QString& Session::username(void) const
 {
     return m_username;
-}
-
-const QList<QString>& Session::channels(void) const
-{
-    return m_channels;
-}
-
-bool Session::is_filtered(quint32 channel_id) const
-{
-    return m_filter.contains(channel_id);
-}
-
-void Session::filter_channel(quint32 channel_id)
-{
-    m_filter.insert(channel_id);
-
-    emit filter_changed();
-}
-
-void Session::unfilter_channel(quint32 channel_id)
-{
-    m_filter.remove(channel_id);
-
-    emit filter_changed();
 }
 
 void Session::update_host(void)
@@ -173,6 +155,13 @@ void Session::update_host(void)
     }
 }
 
+std::uint32_t Session::random_channel(void)
+{
+    auto generator = QRandomGenerator::system();
+
+    return generator->bounded(0U, PROTOCOL_MAXCHAN - 1U);
+}
+
 void Session::reset_session_data(void)
 {
     if(m_aes_context) {
@@ -182,11 +171,6 @@ void Session::reset_session_data(void)
     m_server = nullptr;
     m_aes_context = nullptr;
     m_username.clear();
-    m_channels.fill(QString());
-    m_filter.clear();
-
-    emit channels_changed();
-    emit filter_changed();
 }
 
 void Session::handle_packet(const ENetPacket* packet, quint32 channel)
@@ -197,7 +181,6 @@ void Session::handle_packet(const ENetPacket* packet, quint32 channel)
     thread_local ReadBuffer buffer;
     thread_local AuthChallengeRequest auth_request;
     thread_local AuthChallengeResult auth_result;
-    thread_local ChannelDefinition channel_definition;
     thread_local SystemMessage system_message;
     thread_local TextMessage text_message;
 
@@ -229,19 +212,14 @@ void Session::handle_packet(const ENetPacket* packet, quint32 channel)
 
     if(m_aes_context) {
         switch(packet_type) {
-            case ChannelDefinition::ID:
-                ChannelDefinition::deserialize(m_aes_context, buffer, channel_definition);
-                handle_channel_definition(channel, channel_definition);
-                break;
-
             case SystemMessage::ID:
                 SystemMessage::deserialize(m_aes_context, buffer, system_message);
-                handle_system_message(channel, system_message);
+                handle_system_message(system_message);
                 break;
 
             case TextMessage::ID:
                 TextMessage::deserialize(m_aes_context, buffer, text_message);
-                handle_text_message(channel, text_message);
+                handle_text_message(text_message);
                 break;
 
             default:
@@ -306,42 +284,27 @@ void Session::handle_auth_challenge_result(const AuthChallengeResult& packet)
                 break;
         }
 
-        emit system_message_received(QDateTime::currentDateTime(), tr("Auth failed: %1").arg(message));
+        add_system_message(tr("Auth failed: %1").arg(message));
     }
 }
 
-void Session::handle_channel_definition(quint32 channel, const ChannelDefinition& packet)
-{
-    m_channels[channel] = QString::fromStdString(packet.name);
-
-    if(m_filter.isEmpty()) {
-        filter_channel(channel);
-    }
-
-    emit channels_changed();
-}
-
-void Session::handle_system_message(quint32 channel, const SystemMessage& packet)
+void Session::handle_system_message(const SystemMessage& packet)
 {
     assert(m_aes_context);
-    assert(channel < PROTOCOL_MAXCHAN);
 
     auto timestamp = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(packet.timestamp), QTimeZone::UTC);
     auto message = QString::fromStdString(packet.message);
 
     emit system_message_received(timestamp, message);
-
-    qDebug() << message;
 }
 
-void Session::handle_text_message(quint32 channel, const TextMessage& packet)
+void Session::handle_text_message(const TextMessage& packet)
 {
     assert(m_aes_context);
-    assert(channel < PROTOCOL_MAXCHAN);
 
     auto timestamp = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(packet.timestamp), QTimeZone::UTC);
     auto sender = QString::fromStdString(packet.username);
     auto message = QString::fromStdString(packet.message);
 
-    emit text_message_received(channel, timestamp, sender, message);
+    emit text_message_received(timestamp, sender, message);
 }

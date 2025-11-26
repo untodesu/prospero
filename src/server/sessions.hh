@@ -12,7 +12,6 @@
 
 struct AuthChallengeRequest;
 struct AuthChallengeResult;
-struct ChannelDefinition;
 struct SystemMessage;
 struct TextMessage;
 
@@ -52,17 +51,16 @@ Session* lookup(const std::string& username);
 
 namespace sessions
 {
-void send_packet(Session* session, std::uint32_t channel, const AuthChallengeRequest& packet);
-void send_packet(Session* session, std::uint32_t channel, const AuthChallengeResult& packet);
-void send_packet(Session* session, std::uint32_t channel, const ChannelDefinition& packet);
-void send_packet(Session* session, std::uint32_t channel, const SystemMessage& packet);
-void send_packet(Session* session, std::uint32_t channel, const TextMessage& packet);
+void send_packet(Session* session, const AuthChallengeRequest& packet);
+void send_packet(Session* session, const AuthChallengeResult& packet);
+void send_packet(Session* session, const SystemMessage& packet);
+void send_packet(Session* session, const TextMessage& packet);
 } // namespace sessions
 
 namespace sessions
 {
-void broadcast_packet(const SystemMessage& packet, std::uint32_t channel);
-void broadcast_packet(const TextMessage& packet, std::uint32_t channel);
+void broadcast_packet(const SystemMessage& packet);
+void broadcast_packet(const TextMessage& packet);
 } // namespace sessions
 
 #endif

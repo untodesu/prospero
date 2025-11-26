@@ -11,7 +11,6 @@
 
 struct AuthChallengeRequest;
 struct AuthChallengeResult;
-struct ChannelDefinition;
 struct SystemMessage;
 struct TextMessage;
 
@@ -20,7 +19,6 @@ class Session final : public QObject {
     Q_PROPERTY(bool is_connected READ is_connected NOTIFY connection_changed)
     Q_PROPERTY(bool is_authenticated READ is_authenticated)
     Q_PROPERTY(QString username READ username)
-    Q_PROPERTY(QList<QString> channels READ channels NOTIFY channels_changed)
 
 public:
     static Session* instance;
@@ -32,36 +30,32 @@ public:
     Q_INVOKABLE void connect_to_host(const QLatin1String& host, quint16 port);
     Q_INVOKABLE void disconnect_from_host(void);
 
-    Q_INVOKABLE void send_text_message(quint32 channel, const QString& message);
+    Q_INVOKABLE void add_system_message(const QString& message);
+    Q_INVOKABLE void send_text_message(const QString& message);
 
     Q_INVOKABLE bool is_connected(void) const;
     Q_INVOKABLE bool is_authenticated(void) const;
     Q_INVOKABLE const QString& username(void) const;
-    Q_INVOKABLE const QList<QString>& channels(void) const;
-
-    Q_INVOKABLE bool is_filtered(quint32 channel_id) const;
-    Q_INVOKABLE void filter_channel(quint32 channel_id);
-    Q_INVOKABLE void unfilter_channel(quint32 channel_id);
 
 signals:
     void connection_changed(bool is_connected);
-    void channels_changed(void);
-    void filter_changed(void);
-
     void system_message_received(const QDateTime& timetamp, const QString& message);
-    void text_message_received(quint32 channel, const QDateTime& timetamp, const QString& sender, const QString& message);
+    void text_message_received(const QDateTime& timetamp, const QString& sender, const QString& message);
 
 private slots:
     void update_host(void);
 
 private:
+    static std::uint32_t random_channel(void);
+
     void reset_session_data(void);
+
     void handle_packet(const ENetPacket* packet, quint32 channel);
+
     void handle_auth_challenge_request(const AuthChallengeRequest& packet);
     void handle_auth_challenge_result(const AuthChallengeResult& packet);
-    void handle_channel_definition(quint32 channel, const ChannelDefinition& packet);
-    void handle_system_message(quint32 channel, const SystemMessage& packet);
-    void handle_text_message(quint32 channel, const TextMessage& packet);
+    void handle_system_message(const SystemMessage& packet);
+    void handle_text_message(const TextMessage& packet);
 
     ENetHost* m_host;
     QTimer* m_host_timer;
@@ -70,8 +64,7 @@ private:
     aes256::context m_aes_context { nullptr };
     QString m_username;
 
-    QList<QString> m_channels;
-    QSet<quint32> m_filter;
+    QRandomGenerator m_random;
 };
 
 #endif

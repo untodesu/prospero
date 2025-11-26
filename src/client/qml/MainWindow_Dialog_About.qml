@@ -3,15 +3,12 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 Dialog {
-    width: 360
-    height: 240
+    width: 320
 
     x: 0.5 * (parent.width - width)
     y: 0.5 * (parent.height - height)
 
     modal: true
-
-    standardButtons: Dialog.Close
 
     Overlay.modal: Rectangle {
         color: "black"
@@ -63,6 +60,7 @@ Dialog {
         TextArea {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.minimumHeight: 8 * font.pixelSize
 
             text: g_version.full
 

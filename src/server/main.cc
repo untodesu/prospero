@@ -8,7 +8,6 @@
 #include "core/exception.hh"
 #include "core/version.hh"
 
-#include "server/channels.hh"
 #include "server/host.hh"
 #include "server/identity.hh"
 #include "server/sessions.hh"
@@ -45,7 +44,6 @@ int main(int argc, char** argv)
         identity::init(config_directory);
         userlist::init(config_directory);
 
-        channels::init(config_directory);
         sessions::init();
 
         host::init();
@@ -62,7 +60,6 @@ int main(int argc, char** argv)
         host::shutdown();
 
         sessions::shutdown();
-        channels::shutdown();
 
         settings::shutdown();
 

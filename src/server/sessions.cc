@@ -11,7 +11,6 @@
 #include "core/protocol.hh"
 #include "core/unixtime.hh"
 
-#include "server/channels.hh"
 #include "server/host.hh"
 #include "server/identity.hh"
 #include "server/settings.hh"
@@ -20,6 +19,9 @@
 std::vector<Session> sessions::vector;
 std::unordered_map<std::string, Session*> sessions::username_map;
 std::unordered_set<std::string> sessions::username_set;
+
+static std::mt19937_64 s_channel_randomizer;
+static std::uniform_int_distribution<std::uint32_t> s_channel_distribution;
 
 static void reset_session_data(Session* session)
 {
@@ -77,7 +79,7 @@ static bool authenticate_session(Session* session, const AuthChallengeResponse& 
         response.status = AuthChallengeResult::E_TIME;
         response.username.clear();
 
-        sessions::send_packet(session, PROTOCOL_AUTHCHAN, response);
+        sessions::send_packet(session, response);
 
         return false;
     }
@@ -87,7 +89,7 @@ static bool authenticate_session(Session* session, const AuthChallengeResponse& 
         response.status = AuthChallengeResult::E_CRED;
         response.username.clear();
 
-        sessions::send_packet(session, PROTOCOL_AUTHCHAN, response);
+        sessions::send_packet(session, response);
 
         return false;
     }
@@ -97,7 +99,7 @@ static bool authenticate_session(Session* session, const AuthChallengeResponse& 
         response.status = AuthChallengeResult::E_UNREC;
         response.username.clear();
 
-        sessions::send_packet(session, PROTOCOL_AUTHCHAN, response);
+        sessions::send_packet(session, response);
 
         return false;
     }
@@ -115,22 +117,13 @@ static bool authenticate_session(Session* session, const AuthChallengeResponse& 
     response.server_pkey = identity::public_key;
     response.username = session->username;
 
-    sessions::send_packet(session, PROTOCOL_AUTHCHAN, response);
-
-    for(std::uint32_t i = 0U; i < PROTOCOL_MAXCHAN; ++i) {
-        if(auto channel = channels::array.at(i)) {
-            ChannelDefinition packet;
-            packet.name = channel->name;
-
-            sessions::send_packet(session, i, packet);
-        }
-    }
+    sessions::send_packet(session, response);
 
     SystemMessage notification;
     notification.message = std::format("{} has joined the server", session->username);
     notification.timestamp = unixtime::milliseconds();
 
-    sessions::broadcast_packet(notification, PROTOCOL_AUTHCHAN);
+    sessions::broadcast_packet(notification);
 
     return true;
 }
@@ -147,6 +140,9 @@ void sessions::init(void)
     }
 
     settings::auth::timeout_ms = std::clamp<unsigned long>(settings::auth::timeout_ms, 500U, 600000U);
+
+    s_channel_randomizer = std::mt19937_64(std::random_device()());
+    s_channel_distribution = std::uniform_int_distribution<std::uint32_t>(0U, PROTOCOL_MAXCHAN - 1U);
 }
 
 void sessions::shutdown(void)
@@ -179,7 +175,7 @@ void sessions::create(ENetPeer* peer)
             packet.challenge_timestamp = vector[i].challenge_timestamp;
             packet.protocol_version = PROTOCOL_VERSION;
 
-            send_packet(&vector[i], PROTOCOL_AUTHCHAN, packet);
+            send_packet(&vector[i], packet);
 
             return;
         }
@@ -247,7 +243,7 @@ void sessions::update(ENetPeer* peer, const ENetPacket* packet, std::uint32_t ch
                     TextMessage::deserialize(session->aes_context, buffer, text_message);
                     text_message.timestamp = unixtime::milliseconds();
                     text_message.username = session->username;
-                    broadcast_packet(text_message, channel);
+                    broadcast_packet(text_message);
                     break;
             }
         }
@@ -267,10 +263,9 @@ Session* sessions::lookup(const std::string& username)
     return it->second;
 }
 
-void sessions::send_packet(Session* session, std::uint32_t channel, const AuthChallengeRequest& packet)
+void sessions::send_packet(Session* session, const AuthChallengeRequest& packet)
 {
     assert(session);
-    assert(channel == PROTOCOL_AUTHCHAN);
 
     thread_local WriteBuffer buffer;
 
@@ -278,13 +273,12 @@ void sessions::send_packet(Session* session, std::uint32_t channel, const AuthCh
     buffer.write<std::uint32_t>(AuthChallengeRequest::ID);
     AuthChallengeRequest::serialize(buffer, packet);
 
-    enet_peer_send(session->session_peer, channel, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+    enet_peer_send(session->session_peer, PROTOCOL_AUTHCHAN, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
-void sessions::send_packet(Session* session, std::uint32_t channel, const AuthChallengeResult& packet)
+void sessions::send_packet(Session* session, const AuthChallengeResult& packet)
 {
     assert(session);
-    assert(channel == PROTOCOL_AUTHCHAN);
 
     thread_local WriteBuffer buffer;
 
@@ -292,29 +286,13 @@ void sessions::send_packet(Session* session, std::uint32_t channel, const AuthCh
     buffer.write<std::uint32_t>(AuthChallengeResult::ID);
     AuthChallengeResult::serialize(buffer, packet);
 
-    enet_peer_send(session->session_peer, channel, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+    enet_peer_send(session->session_peer, PROTOCOL_AUTHCHAN, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
-void sessions::send_packet(Session* session, std::uint32_t channel, const ChannelDefinition& packet)
+void sessions::send_packet(Session* session, const SystemMessage& packet)
 {
     assert(session);
     assert(session->aes_context);
-    assert(channel < PROTOCOL_MAXCHAN);
-
-    thread_local WriteBuffer buffer;
-
-    buffer.reset();
-    buffer.write<std::uint32_t>(ChannelDefinition::ID);
-    ChannelDefinition::serialize(session->aes_context, buffer, packet);
-
-    enet_peer_send(session->session_peer, channel, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
-}
-
-void sessions::send_packet(Session* session, std::uint32_t channel, const SystemMessage& packet)
-{
-    assert(session);
-    assert(session->aes_context);
-    assert(channel < PROTOCOL_MAXCHAN);
 
     thread_local WriteBuffer buffer;
 
@@ -322,14 +300,14 @@ void sessions::send_packet(Session* session, std::uint32_t channel, const System
     buffer.write<std::uint32_t>(SystemMessage::ID);
     SystemMessage::serialize(session->aes_context, buffer, packet);
 
-    enet_peer_send(session->session_peer, channel, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+    enet_peer_send(session->session_peer, s_channel_distribution(s_channel_randomizer),
+        enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
-void sessions::send_packet(Session* session, std::uint32_t channel, const TextMessage& packet)
+void sessions::send_packet(Session* session, const TextMessage& packet)
 {
     assert(session);
     assert(session->aes_context);
-    assert(channel < PROTOCOL_MAXCHAN);
 
     thread_local WriteBuffer buffer;
 
@@ -337,23 +315,24 @@ void sessions::send_packet(Session* session, std::uint32_t channel, const TextMe
     buffer.write<std::uint32_t>(TextMessage::ID);
     TextMessage::serialize(session->aes_context, buffer, packet);
 
-    enet_peer_send(session->session_peer, channel, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+    enet_peer_send(session->session_peer, s_channel_distribution(s_channel_randomizer),
+        enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
-void sessions::broadcast_packet(const SystemMessage& packet, std::uint32_t channel)
+void sessions::broadcast_packet(const SystemMessage& packet)
 {
     for(auto& session : vector) {
         if(session.session_peer && session.aes_context) {
-            send_packet(&session, channel, packet);
+            send_packet(&session, packet);
         }
     }
 }
 
-void sessions::broadcast_packet(const TextMessage& packet, std::uint32_t channel)
+void sessions::broadcast_packet(const TextMessage& packet)
 {
     for(auto& session : vector) {
         if(session.session_peer && session.aes_context) {
-            send_packet(&session, channel, packet);
+            send_packet(&session, packet);
         }
     }
 }
