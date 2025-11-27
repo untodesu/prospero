@@ -38,7 +38,6 @@ public:
 
     Q_INVOKABLE void add_notification_user_join(const QDateTime& timestamp, const QString& username);
     Q_INVOKABLE void add_notification_user_left(const QDateTime& timestamp, const QString& username);
-    Q_INVOKABLE void add_notification_permissions_modified(const QDateTime& timestamp);
     Q_INVOKABLE void add_notification_generic(const QDateTime& timestamp, const QString& message);
 
     Q_INVOKABLE void send_text_message(const QString& message);

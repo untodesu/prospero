@@ -13,6 +13,7 @@
 #include "core/unixtime.hh"
 #include "core/version.hh"
 
+#include "server/commands.hh"
 #include "server/host.hh"
 #include "server/identity.hh"
 #include "server/settings.hh"
@@ -106,6 +107,24 @@ static bool authenticate_session(Session* session, const AuthResponse& packet)
     }
 
     return authenticated;
+}
+
+static void handle_text_message(Session* session, const TextMessage& packet)
+{
+    assert(session);
+    assert(session->aes_context);
+
+    if(packet.message.starts_with('/')) {
+        commands::exec(session, packet.message.substr(1U));
+        return;
+    }
+
+    thread_local TextMessage text_message;
+    text_message.timestamp = unixtime::milliseconds();
+    text_message.username = session->username;
+    text_message.message = packet.message;
+
+    sessions::broadcast_packet(text_message);
 }
 
 void sessions::init(void)
@@ -219,9 +238,7 @@ void sessions::update(ENetPeer* peer, const ENetPacket* packet)
             switch(packet_type) {
                 case TextMessage::ID:
                     TextMessage::deserialize(session->aes_context, buffer, text_message);
-                    text_message.timestamp = unixtime::milliseconds();
-                    text_message.username = session->username;
-                    broadcast_packet(text_message);
+                    handle_text_message(session, text_message);
                     break;
             }
         }
@@ -306,6 +323,20 @@ void sessions::send_packet(Session* session, const TextMessage& packet)
     enet_peer_send(session->peer, 0U, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
+void sessions::send_notification(Session* session, std::uint32_t type, std::string_view text)
+{
+    assert(session);
+    assert(session->aes_context);
+
+    thread_local Notification packet;
+
+    packet.timestamp = unixtime::milliseconds();
+    packet.type = type;
+    packet.text = text;
+
+    send_packet(session, packet);
+}
+
 void sessions::broadcast_packet(const Notification& packet)
 {
     for(auto& session : vector) {
@@ -326,7 +357,8 @@ void sessions::broadcast_packet(const TextMessage& packet)
 
 void sessions::broadcast_notification(std::uint32_t type, std::string_view text)
 {
-    Notification packet;
+    thread_local Notification packet;
+
     packet.timestamp = unixtime::milliseconds();
     packet.type = type;
     packet.text = text;

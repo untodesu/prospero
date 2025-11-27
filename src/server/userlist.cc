@@ -14,7 +14,21 @@ std::unordered_map<std::uint64_t, std::pair<ed25519::pkey_buffer, std::uint32_t>
 
 static std::filesystem::path userlist_filepath;
 
-static const char* permission_to_string(std::uint32_t permission)
+static void sync_to_disk(void)
+{
+    Config config;
+
+    for(const auto& it : userlist::map) {
+        const auto& public_key = it.second.first;
+        const auto& permission = it.second.second;
+
+        config.set_value<std::string_view>(ed25519::export_public_key(public_key), userlist::permission_to_string(permission));
+    }
+
+    config.write(userlist_filepath);
+}
+
+const char* userlist::permission_to_string(std::uint32_t permission)
 {
     switch(permission) {
         case PERM_USER:
@@ -22,12 +36,15 @@ static const char* permission_to_string(std::uint32_t permission)
 
         case PERM_OPER:
             return "oper";
+
+        case PERM_ROOT:
+            return "root";
     }
 
     return nullptr;
 }
 
-static std::uint32_t string_to_permission(std::string_view string)
+std::uint32_t userlist::string_to_permission(std::string_view string)
 {
     if(0 == string.compare("user")) {
         return PERM_USER;
@@ -37,21 +54,11 @@ static std::uint32_t string_to_permission(std::string_view string)
         return PERM_OPER;
     }
 
-    return PERM_NULL;
-}
-
-static void sync_to_disk(void)
-{
-    Config config;
-
-    for(const auto& it : userlist::map) {
-        const auto& public_key = it.second.first;
-        const auto& permission = it.second.second;
-
-        config.set_value<std::string_view>(ed25519::export_public_key(public_key), permission_to_string(permission));
+    if(0 == string.compare("root")) {
+        return PERM_ROOT;
     }
 
-    config.write(userlist_filepath);
+    return PERM_NULL;
 }
 
 void userlist::init(const std::filesystem::path& config_directory)

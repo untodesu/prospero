@@ -38,7 +38,7 @@ public:
 
 private:
     std::vector<std::byte> m_vector;
-    std::size_t m_position;
+    std::size_t m_position { 0 };
 };
 
 class WriteBuffer final {

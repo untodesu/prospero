@@ -4,6 +4,12 @@
 ## Description: Server executable build configuration
 
 add_executable(prserver
+    "${CMAKE_CURRENT_LIST_DIR}/commands.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/commands.hh"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_base.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_base.hh"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_userlist.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_userlist.hh"
     "${CMAKE_CURRENT_LIST_DIR}/host.cc"
     "${CMAKE_CURRENT_LIST_DIR}/host.hh"
     "${CMAKE_CURRENT_LIST_DIR}/identity.cc"

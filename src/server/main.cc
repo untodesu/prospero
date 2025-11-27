@@ -8,6 +8,8 @@
 #include "core/exception.hh"
 #include "core/version.hh"
 
+#include "server/commands_base.hh"
+#include "server/commands_userlist.hh"
 #include "server/host.hh"
 #include "server/identity.hh"
 #include "server/sessions.hh"
@@ -61,6 +63,9 @@ int main(int argc, char** argv)
         sessions::init();
 
         host::init();
+
+        commands::base::init();
+        commands::userlist::init();
 
         std::signal(SIGINT, &signal_handler);
         std::signal(SIGTERM, &signal_handler);

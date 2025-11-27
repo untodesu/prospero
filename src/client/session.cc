@@ -135,11 +135,6 @@ void Session::add_notification_user_left(const QDateTime& timestamp, const QStri
     emit system_message_received(timestamp, tr("%1 disconnected from the server").arg(username));
 }
 
-void Session::add_notification_permissions_modified(const QDateTime& timestamp)
-{
-    emit system_message_received(timestamp, tr("Server permissions have been updated"));
-}
-
 void Session::add_notification_generic(const QDateTime& timestamp, const QString& message)
 {
     emit system_message_received(timestamp, message);
@@ -330,10 +325,6 @@ void Session::handle_notification(const Notification& packet)
 
         case Notification::T_USER_LEFT:
             add_notification_user_left(timestamp, text);
-            break;
-
-        case Notification::T_PERM_MODF:
-            add_notification_permissions_modified(timestamp);
             break;
 
         case Notification::T_TEXT_MESG:
