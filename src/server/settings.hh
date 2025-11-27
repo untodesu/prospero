@@ -16,7 +16,7 @@ extern unsigned int max_peers;
 namespace settings::auth
 {
 extern unsigned long timeout_ms;
-extern bool allow_cloned_pkeys;
+extern bool allow_dopplegangers;
 } // namespace settings::auth
 
 namespace settings

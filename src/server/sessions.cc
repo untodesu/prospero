@@ -84,8 +84,12 @@ static bool authenticate_session(Session* session, const AuthResponse& packet)
     authenticated = authenticated && ed25519::verify(packet.public_key, session->challenge, packet.signature);
     authenticated = authenticated && userlist::lookup(packet.public_key);
 
-    if(!settings::auth::allow_cloned_pkeys) {
-        authenticated = authenticated && nullptr == sessions::lookup(packet.public_key);
+    if(!settings::auth::allow_dopplegangers) {
+        auto doppleganger = sessions::lookup(packet.public_key);
+
+        if(doppleganger && doppleganger->aes_context) {
+            authenticated = false;
+        }
     }
 
     if(authenticated) {

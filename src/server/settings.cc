@@ -15,14 +15,14 @@ static std::filesystem::path config_filepath;
 unsigned short settings::host::udp_port = 18137U;
 unsigned int settings::host::max_peers = 32U;
 unsigned long settings::auth::timeout_ms = 10000U;
-bool settings::auth::allow_cloned_pkeys = false;
+bool settings::auth::allow_dopplegangers = false;
 
 static void apply_from_config(const Config& config)
 {
     settings::host::udp_port = config.value<unsigned short>("host.udp_port", settings::host::udp_port);
     settings::host::max_peers = config.value<unsigned int>("host.max_peers", settings::host::max_peers);
     settings::auth::timeout_ms = config.value<unsigned long>("auth.timeout_ms", settings::auth::timeout_ms);
-    settings::auth::allow_cloned_pkeys = config.value<bool>("auth.allow_cloned_pkeys", settings::auth::allow_cloned_pkeys);
+    settings::auth::allow_dopplegangers = config.value<bool>("auth.allow_dopplegangers", settings::auth::allow_dopplegangers);
 }
 
 static void apply_to_config(Config& config)
@@ -30,7 +30,7 @@ static void apply_to_config(Config& config)
     config.set_value<unsigned short>("host.udp_port", settings::host::udp_port);
     config.set_value<unsigned int>("host.max_peers", settings::host::max_peers);
     config.set_value<unsigned long>("auth.timeout_ms", settings::auth::timeout_ms);
-    config.set_value<bool>("auth.allow_cloned_pkeys", settings::auth::allow_cloned_pkeys);
+    config.set_value<bool>("auth.allow_dopplegangers", settings::auth::allow_dopplegangers);
 }
 
 void settings::init(const std::filesystem::path& config_directory)
