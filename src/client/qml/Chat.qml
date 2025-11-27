@@ -5,6 +5,9 @@ import QtQuick.Layouts 1.15
 ColumnLayout {
     id: chat
     
+    anchors.fill: parent
+    anchors.margins: 4
+
     Rectangle {
         Layout.fillWidth: true
         Layout.fillHeight: false
@@ -36,6 +39,4 @@ ColumnLayout {
     function clear() {
         chat_messages.model.clear();
     }
-
-    Keys.forwardTo: chat_input
 }

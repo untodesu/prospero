@@ -45,8 +45,8 @@ public:
 signals:
     void connection_changed(void);
     void connection_started(void);
-    void notification_received(const QDateTime& timetamp, const QString& message);
-    void text_message_received(const QDateTime& timetamp, const QString& username, const QString& message);
+    void notification_received(const QDateTime& timestamp, const QString& message);
+    void text_message_received(const QDateTime& timestamp, const QString& username, const QString& message);
 
     void address_resolved(ENetAddress address);
 

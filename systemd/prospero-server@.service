@@ -1,0 +1,20 @@
+[Unit]
+Description=Prospero Server Instance %i
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=nobody
+Group=nogroup
+ExecStart=/usr/local/bin/prospero-server /usr/local/etc/prospero/%i
+WorkingDirectory=/var/lib/prospero/%i
+Restart=on-failure
+RestartSec=5s
+
+ProtectSystem=full
+ReadWritePaths=/usr/local/etc/prospero/%i
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

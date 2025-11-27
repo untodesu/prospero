@@ -15,22 +15,6 @@
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "buildRoot": "${projectDir}/build/vs2022-${name}",
       "installRoot": "${projectDir}/build/out-vs2022-${name}"
-    },
-    {
-      "name": "win32-debug",
-      "generator": "Ninja",
-      "configurationType": "Debug",
-      "inheritEnvironments": [ "msvc_x86_x86" ],
-      "buildRoot": "${projectDir}/build/vs2022-${name}",
-      "installRoot": "${projectDir}/build/out-vs2022-${name}"
-    },
-    {
-      "name": "win32-release",
-      "generator": "Ninja",
-      "configurationType": "Release",
-      "inheritEnvironments": [ "msvc_x86_x86" ],
-      "buildRoot": "${projectDir}/build/vs2022-${name}",
-      "installRoot": "${projectDir}/build/out-vs2022-${name}"
     }
   ]
 }

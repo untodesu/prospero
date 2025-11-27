@@ -52,7 +52,11 @@ int main(int argc, char** argv)
             throw core::runtime_error("enet_initialize failed");
         }
 
-        std::filesystem::path config_directory("assets/etc/prospero"); // TODO: make configurable
+        if(argc < 2) {
+            throw core::invalid_argument("missing argument");
+        }
+
+        std::filesystem::path config_directory(argv[1]);
         std::filesystem::create_directories(config_directory);
 
         settings::init(config_directory);

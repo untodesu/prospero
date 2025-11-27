@@ -14,53 +14,18 @@
 #include "server/sessions.hh"
 #include "server/userlist.hh"
 
-static void command_help(Session* sender, const std::vector<std::string_view>& arguments)
-{
-    assert(sender);
-    assert(sender->aes_context);
-
-    auto my_permission = userlist::lookup(sender->public_key);
-
-    if(arguments.empty()) {
-        std::ostringstream stream;
-        stream << "Available commands:";
-
-        for(auto it : commands::map) {
-            if(my_permission >= it.second.permission) {
-                stream << std::endl;
-                stream << std::format("- {} {}", it.first, it.second.instructions);
-            }
-        }
-
-        sessions::send_notification(sender, Notification::T_TEXT_MESG, stream.str());
-    }
-    else {
-        auto it = commands::map.find(std::string(arguments[0]));
-
-        if(it == commands::map.cend()) {
-            throw core::invalid_argument("{}: unknown command", arguments[0]);
-        }
-
-        if(my_permission < it->second.permission) {
-            throw core::invalid_argument("{}: insufficient permissions", arguments[0]);
-        }
-
-        sessions::send_notification(sender, Notification::T_TEXT_MESG, std::format("usage: {} {}", it->first, it->second.instructions));
-    }
-}
-
 static void command_list(Session* sender, const std::vector<std::string_view>& arguments)
 {
     assert(sender);
     assert(sender->aes_context);
 
     std::ostringstream stream;
-    stream << "Online users:";
 
-    for(auto& session : sessions::vector) {
-        if(!session.username.empty()) {
-            stream << std::endl;
-            stream << std::format("- {}", session.username);
+    for(std::size_t i = 0U; i < sessions::vector.size(); ++i) {
+        if(sessions::vector[i].peer && sessions::vector[i].aes_context) {
+            if(i >= 1U)
+                stream << std::endl;
+            stream << std::format("- {}", sessions::vector[i].username);
         }
     }
 
@@ -119,19 +84,12 @@ void commands::base::init(void)
     Command skeleton;
     skeleton.permission = PERM_USER;
 
-    skeleton.instructions = "[command]";
-    skeleton.handler = &command_help;
-    commands::add("help", skeleton);
-
-    skeleton.instructions.clear();
     skeleton.handler = &command_list;
     commands::add("list", skeleton);
 
-    skeleton.instructions = "<message>";
     skeleton.handler = &command_rpme;
     commands::add("me", skeleton);
 
-    skeleton.instructions = "<username>";
     skeleton.handler = &command_whois;
     commands::add("whois", skeleton);
 }

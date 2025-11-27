@@ -2,338 +2,397 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
-Dialog {
-    id: greeter_dialog
-    
-    width: 480
+Rectangle {
+    readonly property string icon_normal: "qrc:/res/icons/prospero-256.png"
+    readonly property string icon_funny: "qrc:/res/icons/fish-spinning.gif"
 
-    x: 0.5 * (parent.width - width)
-    y: 0.5 * (parent.height - height)
+    id: greeter_panel
 
-    modal: true
+    anchors.fill: parent
+    anchors.margins: 0
 
-    visible: !g_session.is_connected
-
-    onRejected: Qt.callLater(greeter_dialog.open)
+    color: "transparent"
 
     Connections {
         target: g_session
 
         function onConnection_changed() {
-            greeter_dialog.visible = !g_session.is_connected;
+            greeter_panel.visible = !g_session.is_connected;
+
+            if(greeter_panel.visible) {
+                address_field.focus = true;
+
+                if(Math.random() < 0.125) {
+                    logo_image.source = greeter_panel.icon_funny;
+                    logo_image.playing = true;
+                }
+                else {
+                    logo_image.source = greeter_panel.icon_normal;
+                    logo_image.playing = false;
+                }
+            }
         }
     }
 
-    Overlay.modal: Rectangle {
-        color: "black"
-        opacity: 0.5
-    }
-
-    ColumnLayout {
+    Rectangle {
         anchors.fill: parent
-        anchors.margins: 2
-        spacing: 8
-
-        Label {
-            text: qsTr("Prospero Client")
-
-            Layout.fillWidth: true
-            Layout.fillHeight: false
-
-            font.bold: true
-
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
+        gradient: Gradient {
+            GradientStop { position: 0.2; color: Qt.rgba(0, 0, 0, 0.50); }
+            GradientStop { position: 0.8; color: Qt.rgba(0, 0, 0, 0.75); }
         }
 
-        Label {
-            text: g_version.full
-
-            Layout.fillWidth: true
-            Layout.fillHeight: false
-
-            font.family: g_monospace.family
-            font.pointSize: 8
-
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
+        MouseArea {
+            anchors.fill: parent
+            enabled: true
+            propagateComposedEvents: true
         }
+    }
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: false
-            color: palette.button
-            opacity: 0.5
-            height: 1
-        }
+    Rectangle {
+        width: 480
+        height: 400
 
-        GridLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+        x: 0.5 * (parent.width - width)
+        y: 0.5 * (parent.height - height)
 
-            columns: 2
+        color: palette.window
 
-            Label {
-                text: qsTr("Username:")
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignRight
-            }
-
-            TextField {
-                id: username_field
-                
-                anchors.margins: 4
-
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                text: g_settings.username
-
-                font.family: g_monospace.family
-
-                onTextChanged: {
-                    g_settings.username = text;
-                }
-
-                validator: RegularExpressionValidator {
-                    regularExpression: /^[a-zA-Z0-9_\-\.]+$/
-                }
-
-                Accessible.name: qsTr("Username Input Field")
-                Accessible.description: qsTr("Field to type the desired username for the session")
-            }
-
-            Label {
-                text: qsTr("Identity:")
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignRight
-            }
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 8
+            spacing: 8
 
             RowLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                
-                TextField {
-                    Layout.fillWidth: true
-                    
-                    anchors.margins: 4
+                AnimatedImage {
+                    id: logo_image
 
-                    text: g_settings.public_key
+                    Layout.maximumWidth: title_section.height
+                    Layout.maximumHeight: title_section.height
 
-                    font.family: g_monospace.family
-                    font.pointSize: 10
-
-                    readOnly: true
-                    selectByMouse: true
-
-                    Accessible.name: qsTr("Identity Display Field")
-                    Accessible.description: qsTr("Field displaying the public key identity")
+                    source: greeter_panel.icon_normal
                 }
 
-                Button {
-                    Layout.fillWidth: false
-                    Layout.fillHeight: true
+                ColumnLayout {
+                    id: title_section
 
-                    text: qsTr("Copy")
+                    Layout.fillWidth: true
+                    Layout.fillHeight: false
 
-                    onClicked: {
-                        g_clipboard.set_text(g_settings.public_key);
+                    Label {
+                        text: qsTr("Prospero Client")
+
+                        Layout.fillWidth: true
+                        Layout.fillHeight: false
+
+                        font.bold: true
+
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
                     }
 
-                    Accessible.name: qsTr("Copy Identity Button")
-                    Accessible.description: qsTr("Button to copy the public key identity to the clipboard")
-                }
-            }
-        }
-        
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: false
-            color: palette.button
-            opacity: 0.5
-            height: 1
-        }
+                    TextEdit {
+                        text: g_version.full
 
-        ListView {
-            id: recent_servers
+                        Layout.fillWidth: true
+                        Layout.fillHeight: false
 
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.minimumHeight: 160
+                        font.family: g_monospace.family
+                        font.pointSize: 8
 
-            spacing: 0
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
 
-            clip: true
+                        readOnly: true
+                        selectByMouse: true
 
-            ScrollBar.vertical: ScrollBar {
-                policy: ScrollBar.AsNeeded
-            }
-
-            model: []
-
-            Component.onCompleted: {
-                recent_servers.model = g_recents.list;
-            }
-
-            Connections {
-                target: g_recents
-
-                function onUpdated() {
-                    recent_servers.model = g_recents.list;
+                        color: palette.text
+                    }
                 }
             }
 
-            delegate: Rectangle {
-                readonly property color click_color: palette.mid
-                readonly property color hover_color: palette.midlight
-                readonly property color normal_color: "transparent"
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: false
+                color: palette.button
+                opacity: 0.5
+                height: 1
+            }
 
-                width: parent ? parent.width : implicitWidth
-                height: 8 + font.pixelSize
+            GridLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
 
-                color: normal_color
+                columns: 2
 
                 Label {
-                    id: server_address
+                    Layout.fillWidth: false
+                    Layout.fillHeight: true
+                    text: qsTr("Username:")
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignRight
+                }
 
-                    text: qsTr("[%1] %2").arg(index + 1).arg(modelData)
+                TextField {
+                    id: username_field
+                    
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
-                    anchors.fill: parent
-                    anchors.margins: 4
+                    text: g_settings.username
 
                     font.family: g_monospace.family
-                    font.pointSize: 11
+
+                    onTextChanged: {
+                        g_settings.username = text;
+                    }
+
+                    validator: RegularExpressionValidator {
+                        regularExpression: /^[a-zA-Z0-9_\-\.]+$/
+                    }
 
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignLeft
 
-                    opacity: 1.0 - 0.5 * (index / g_recents.list.length)
+                    Accessible.name: qsTr("Username Input Field")
+                    Accessible.description: qsTr("Field to type the desired username for the session")
                 }
 
-                MouseArea {
-                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                Label {
+                    Layout.fillWidth: false
+                    Layout.fillHeight: true
+                    text: qsTr("Identity:")
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignRight
+                }
 
-                    anchors.fill: parent
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    
+                    TextField {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
 
-                    hoverEnabled: true
+                        text: g_settings.public_key.substring(0, 24) + "..."
 
-                    onClicked: function(mouse) {
-                        if(mouse.button === Qt.RightButton) {
-                            g_recents.remove(modelData);
-                        }
-                        else {
-                            address_field.text = modelData;
-                        }
+                        font.family: g_monospace.family
+
+                        readOnly: true
+                        selectByMouse: true
+                        enabled: false
+
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignLeft
+
+                        Accessible.name: qsTr("Identity Display Field")
+                        Accessible.description: qsTr("Field displaying the public key identity")
                     }
 
-                    onDoubleClicked: function(mouse) {
-                        if(mouse.button === Qt.LeftButton) {
-                            address_field.text = modelData;
-                            connect_button.clicked();
+                    Button {
+                        Layout.fillWidth: false
+                        Layout.fillHeight: true
+
+                        text: qsTr("Copy")
+
+                        onClicked: {
+                            g_clipboard.set_text(g_settings.public_key);
                         }
-                    }
 
-                    onEntered: {
-                        parent.color = hover_color;
-                    }
-
-                    onExited: {
-                        parent.color = normal_color;
-                    }
-
-                    onPressed: {
-                        parent.color = click_color;
-                    }
-
-                    onReleased: {
-                        if(containsMouse) {
-                            parent.color = hover_color;
-                        }
-                        else {
-                            parent.color = normal_color;
-                        }
+                        Accessible.name: qsTr("Copy Identity Button")
+                        Accessible.description: qsTr("Button to copy the public key identity to the clipboard")
                     }
                 }
             }
-        }
+            
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: false
+                color: palette.button
+                opacity: 0.5
+                height: 1
+            }
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.fillHeight: false
-
-            TextField {
-                id: address_field
+            ListView {
+                id: recent_servers
 
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                Layout.minimumHeight: 160
 
-                Layout.minimumHeight: font.pixelSize + 8
+                spacing: 0
 
-                placeholderText: qsTr("Host address...")
+                clip: true
 
-                font.family: g_monospace.family
-
-                focus: true
-
-                validator: RegularExpressionValidator {
-                    regularExpression: /^[a-zA-Z0-9\.\-_:]+$/
+                ScrollBar.vertical: ScrollBar {
+                    policy: ScrollBar.AsNeeded
                 }
 
-                Keys.onPressed: function (event) {
-                    if(event.key === Qt.Key_Enter || event.key == Qt.Key_Return) {
-                        connect_button.clicked();
+                model: []
 
-                        event.accepted = true;
+                Component.onCompleted: {
+                    recent_servers.model = g_recents.list;
+                }
+
+                Connections {
+                    target: g_recents
+
+                    function onUpdated() {
+                        recent_servers.model = g_recents.list;
                     }
                 }
 
-                Accessible.name: qsTr("Connect by Address Input Field")
-                Accessible.description: qsTr("Field to type the address or address and port of the host to connect to")
+                delegate: Rectangle {
+                    readonly property color click_color: palette.mid
+                    readonly property color hover_color: palette.midlight
+                    readonly property color normal_color: "transparent"
+
+                    width: parent ? parent.width : implicitWidth
+                    height: 8 + font.pixelSize
+
+                    color: normal_color
+
+                    Label {
+                        id: server_address
+
+                        text: qsTr("[%1] %2").arg(index + 1).arg(modelData)
+
+                        anchors.fill: parent
+                        anchors.margins: 4
+
+                        font.family: g_monospace.family
+                        font.pointSize: 11
+
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignLeft
+
+                        opacity: 1.0 - 0.5 * (index / g_recents.list.length)
+                    }
+
+                    MouseArea {
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                        anchors.fill: parent
+
+                        hoverEnabled: true
+
+                        onClicked: function(mouse) {
+                            if(mouse.button === Qt.RightButton) {
+                                g_recents.remove(modelData);
+                            }
+                            else {
+                                address_field.text = modelData;
+                            }
+                        }
+
+                        onDoubleClicked: function(mouse) {
+                            if(mouse.button === Qt.LeftButton) {
+                                address_field.text = modelData;
+                                connect_button.clicked();
+                            }
+                        }
+
+                        onEntered: {
+                            parent.color = hover_color;
+                        }
+
+                        onExited: {
+                            parent.color = normal_color;
+                        }
+
+                        onPressed: {
+                            parent.color = click_color;
+                        }
+
+                        onReleased: {
+                            if(containsMouse) {
+                                parent.color = hover_color;
+                            }
+                            else {
+                                parent.color = normal_color;
+                            }
+                        }
+                    }
+                }
             }
 
-            Button {
-                id: connect_button
-
-                Layout.fillWidth: false
+            RowLayout {
+                Layout.fillWidth: true
                 Layout.fillHeight: false
-                Layout.alignment: Qt.AlignTop
 
-                Layout.minimumHeight: address_field.height
-                Layout.maximumHeight: address_field.height
+                TextField {
+                    id: address_field
 
-                text: qsTr("Connect")
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
-                onClicked: {
-                    if(address_field.text.length > 0) {
-                        g_recents.add(address_field.text);
-                        g_session.connect_to_host(address_field.text);
+                    Layout.minimumHeight: font.pixelSize + 8
+
+                    placeholderText: qsTr("Host address...")
+
+                    font.family: g_monospace.family
+
+                    focus: true
+
+                    validator: RegularExpressionValidator {
+                        regularExpression: /^[a-zA-Z0-9\.\-_:]+$/
                     }
+
+                    Keys.onPressed: function (event) {
+                        if(event.key === Qt.Key_Enter || event.key == Qt.Key_Return) {
+                            connect_button.clicked();
+
+                            event.accepted = true;
+                        }
+                    }
+
+                    Accessible.name: qsTr("Connect by Address Input Field")
+                    Accessible.description: qsTr("Field to type the address or address and port of the host to connect to")
                 }
 
-                Accessible.name: qsTr("Connect by Address Button")
-                Accessible.description: qsTr("Button to connect to the host specified in the input field")
-            }
+                Button {
+                    id: connect_button
 
-            Connections {
-                target: g_session
+                    Layout.fillWidth: false
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignTop
 
-                function onConnection_changed() {
-                    if(g_session.is_connected) {
+                    Layout.minimumHeight: address_field.height
+                    Layout.maximumHeight: address_field.height
+
+                    text: qsTr("Connect")
+
+                    onClicked: {
+                        if(address_field.text.length > 0) {
+                            g_recents.add(address_field.text);
+                            g_session.connect_to_host(address_field.text);
+                        }
+                    }
+
+                    Accessible.name: qsTr("Connect by Address Button")
+                    Accessible.description: qsTr("Button to connect to the host specified in the input field")
+                }
+
+                Connections {
+                    target: g_session
+
+                    function onConnection_changed() {
+                        if(g_session.is_connected) {
+                            recent_servers.enabled = false;
+                            address_field.enabled = false;
+                            connect_button.enabled = false;
+                        }
+                        else {
+                            recent_servers.enabled = true;
+                            address_field.enabled = true;
+                            connect_button.enabled = true;
+                        }
+                    }
+
+                    function onConnection_started() {
                         recent_servers.enabled = false;
                         address_field.enabled = false;
                         connect_button.enabled = false;
                     }
-                    else {
-                        recent_servers.enabled = true;
-                        address_field.enabled = true;
-                        connect_button.enabled = true;
-                    }
-                }
-
-                function onConnection_started() {
-                    recent_servers.enabled = false;
-                    address_field.enabled = false;
-                    connect_button.enabled = false;
                 }
             }
         }

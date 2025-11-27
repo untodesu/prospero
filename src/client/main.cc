@@ -8,6 +8,7 @@
 #include "core/exception.hh"
 
 #include "client/clipboard.hh"
+#include "client/ipc.hh"
 #include "client/recents.hh"
 #include "client/session.hh"
 #include "client/settings.hh"
@@ -16,13 +17,18 @@
 int main(int argc, char** argv)
 {
     try {
+        QApplication app(argc, argv);
+
+        if(IPC::ensure_single_instance()) {
+            qDebug() << "Waking up existing instance";
+            return EXIT_SUCCESS;
+        }
+
         auto enet_check = enet_initialize();
 
         if(enet_check) {
             throw core::runtime_error("enet_initialize failed");
         }
-
-        QApplication app(argc, argv);
 
         auto roboto_regular_id = QFontDatabase::addApplicationFont(":/res/fonts/Roboto-Medium.ttf");
         auto roboto_mono_id = QFontDatabase::addApplicationFont(":/res/fonts/RobotoMono-Medium.ttf");
@@ -30,6 +36,8 @@ int main(int argc, char** argv)
         if(roboto_regular_id < 0 || roboto_mono_id < 0) {
             throw core::runtime_error("font loading failed");
         }
+
+        app.setWindowIcon(QIcon(":/res/icons/prospero.ico"));
 
         QQuickStyle::setStyle("Fusion");
 
@@ -44,6 +52,7 @@ int main(int argc, char** argv)
         auto qml = new QQmlApplicationEngine();
 
         Clipboard::instance = new Clipboard(&app);
+        IPC::instance = new IPC(&app);
         Recents::instance = new Recents(&app);
         Session::instance = new Session(&app);
         Settings::instance = new Settings(&app);
@@ -52,6 +61,7 @@ int main(int argc, char** argv)
         auto context = qml->rootContext();
 
         context->setContextProperty("g_clipboard", Clipboard::instance);
+        context->setContextProperty("g_ipc", IPC::instance);
         context->setContextProperty("g_recents", Recents::instance);
         context->setContextProperty("g_settings", Settings::instance);
         context->setContextProperty("g_session", Session::instance);
@@ -66,6 +76,7 @@ int main(int argc, char** argv)
         delete qml;
 
         delete Clipboard::instance;
+        delete IPC::instance;
         delete Recents::instance;
         delete Settings::instance;
         delete Session::instance;

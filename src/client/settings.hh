@@ -11,6 +11,9 @@
 
 class Settings final : public QObject {
     Q_OBJECT
+    Q_PROPERTY(bool minimize_on_close READ minimize_on_close WRITE set_minimize_on_close NOTIFY minimize_on_close_changed)
+    Q_PROPERTY(bool mute_messages READ mute_messages WRITE set_mute_messages NOTIFY mute_messages_changed)
+    Q_PROPERTY(bool mute_mentions READ mute_mentions WRITE set_mute_mentions NOTIFY mute_mentions_changed)
     Q_PROPERTY(QString username READ username WRITE set_username NOTIFY username_changed)
     Q_PROPERTY(QString public_key READ public_key CONSTANT)
 
@@ -20,6 +23,15 @@ public:
     explicit Settings(QObject* parent = nullptr);
     virtual ~Settings(void) override;
 
+    bool minimize_on_close(void) const;
+    void set_minimize_on_close(bool minimize);
+
+    bool mute_messages(void) const;
+    void set_mute_messages(bool mute);
+
+    bool mute_mentions(void) const;
+    void set_mute_mentions(bool mute);
+
     const QString& username(void) const;
     void set_username(const QString& username);
 
@@ -28,6 +40,9 @@ public:
     const ed25519::skey_buffer& private_key_buffer(void) const;
 
 signals:
+    void minimize_on_close_changed(void);
+    void mute_messages_changed(void);
+    void mute_mentions_changed(void);
     void username_changed(void);
 
 private:
@@ -36,7 +51,13 @@ private:
 
     std::filesystem::path m_config_path;
 
+    bool m_minimize_on_close;
+
+    bool m_mute_messages;
+    bool m_mute_mentions;
+
     QString m_username;
+
     QString m_public_key_string;
     ed25519::pkey_buffer m_public_key;
     ed25519::skey_buffer m_private_key;

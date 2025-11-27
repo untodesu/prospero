@@ -102,6 +102,8 @@ Rectangle {
     }
 
     HoverHandler {
+        enabled: g_session.is_connected
+
         onHoveredChanged: {
             parent.color = hovered ? parent.hover_color : parent.normal_color;
         }

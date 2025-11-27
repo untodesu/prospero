@@ -26,6 +26,54 @@ Settings::~Settings(void)
     save_to_config();
 }
 
+bool Settings::minimize_on_close(void) const
+{
+    return m_minimize_on_close;
+}
+
+void Settings::set_minimize_on_close(bool minimize)
+{
+    if(m_minimize_on_close != minimize) {
+        m_minimize_on_close = minimize;
+
+        emit minimize_on_close_changed();
+
+        save_to_config();
+    }
+}
+
+bool Settings::mute_messages(void) const
+{
+    return m_mute_messages;
+}
+
+void Settings::set_mute_messages(bool mute)
+{
+    if(m_mute_messages != mute) {
+        m_mute_messages = mute;
+
+        emit mute_messages_changed();
+
+        save_to_config();
+    }
+}
+
+bool Settings::mute_mentions(void) const
+{
+    return m_mute_mentions;
+}
+
+void Settings::set_mute_mentions(bool mute)
+{
+    if(m_mute_mentions != mute) {
+        m_mute_mentions = mute;
+
+        emit mute_mentions_changed();
+
+        save_to_config();
+    }
+}
+
 const QString& Settings::username(void) const
 {
     return m_username;
@@ -71,6 +119,11 @@ void Settings::load_from_config(void)
         default_username = "prosperoclient";
     }
 
+    m_minimize_on_close = config.value<bool>("minimize_on_close", true);
+
+    m_mute_messages = config.value<bool>("mute_messages", false);
+    m_mute_mentions = config.value<bool>("mute_mentions", false);
+
     m_username = QString::fromStdString(std::string(config.value<std::string_view>("username", default_username.toStdString())));
 
     auto public_key_hexstring = config.value<std::string_view>("public_key");
@@ -92,6 +145,11 @@ void Settings::load_from_config(void)
 void Settings::save_to_config(void)
 {
     Config config;
+
+    config.set_value<bool>("minimize_on_close", m_minimize_on_close);
+
+    config.set_value<bool>("mute_messages", m_mute_messages);
+    config.set_value<bool>("mute_mentions", m_mute_mentions);
 
     config.set_value<std::string_view>("username", m_username.toStdString());
 

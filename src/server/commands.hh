@@ -13,7 +13,6 @@ using CommandHandler = void (*)(Session* sender, const std::vector<std::string_v
 
 struct Command final {
     std::uint32_t permission {};
-    std::string instructions;
     CommandHandler handler {};
 };
 

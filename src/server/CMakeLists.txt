@@ -3,7 +3,7 @@
 ## File: CMakeLists.txt; Created: Tue Nov 25 2025 00:47:23
 ## Description: Server executable build configuration
 
-add_executable(prserver
+add_executable(prospero-server
     "${CMAKE_CURRENT_LIST_DIR}/commands.cc"
     "${CMAKE_CURRENT_LIST_DIR}/commands.hh"
     "${CMAKE_CURRENT_LIST_DIR}/commands_base.cc"
@@ -22,8 +22,10 @@ add_executable(prserver
     "${CMAKE_CURRENT_LIST_DIR}/settings.hh"
     "${CMAKE_CURRENT_LIST_DIR}/userlist.cc"
     "${CMAKE_CURRENT_LIST_DIR}/userlist.hh")
-target_compile_features(prserver PUBLIC cxx_std_20)
-target_include_directories(prserver PUBLIC "${PROJECT_SOURCE_DIR}/src")
-target_link_libraries(prserver PRIVATE core enet uulog)
+target_compile_features(prospero-server PUBLIC cxx_std_20)
+target_include_directories(prospero-server PUBLIC "${PROJECT_SOURCE_DIR}/src")
+target_link_libraries(prospero-server PRIVATE core enet uulog)
 
-target_precompile_headers(prserver PRIVATE "${CMAKE_CURRENT_LIST_DIR}/precompiled.hh")
+target_precompile_headers(prospero-server PRIVATE "${CMAKE_CURRENT_LIST_DIR}/precompiled.hh")
+
+install(TARGETS prospero-server RUNTIME DESTINATION bin)

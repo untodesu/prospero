@@ -95,11 +95,9 @@ void commands::userlist::init(void)
     Command skeleton;
     skeleton.permission = PERM_OPER;
 
-    skeleton.instructions = "<public_key>";
     skeleton.handler = &command_adduser;
     commands::add("adduser", skeleton);
 
-    skeleton.instructions = "<username|public_key> <permission>";
     skeleton.handler = &command_moduser;
     commands::add("moduser", skeleton);
 }

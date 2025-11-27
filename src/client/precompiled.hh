@@ -50,6 +50,8 @@
 #include <QFileDialog>
 #include <QFontDatabase>
 #include <QHash>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QMessageBox>
 #include <QPair>
 #include <QQmlApplicationEngine>
@@ -57,6 +59,7 @@
 #include <QQuickStyle>
 #include <QRandomGenerator>
 #include <QStandardPaths>
+#include <QTextStream>
 #include <QThreadPool>
 #include <QTimer>
 #include <QtConcurrent>
