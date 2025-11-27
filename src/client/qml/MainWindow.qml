@@ -5,7 +5,7 @@ import QtQuick.Layouts 1.15
 ApplicationWindow {
     id: main_window
 
-    title: qsTr("Prospero")
+    title: qsTr("Prospero %1").arg(g_version.full)
 
     minimumWidth: 640
     minimumHeight: 480

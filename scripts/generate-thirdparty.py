@@ -56,5 +56,5 @@ with open("thirdparty.txt", 'w', encoding='utf-8') as out_file:
             out_file.write(f"{name} - {description}\n")
         else:
             out_file.write(f"{name}\n")
-        out_file.write(f"{'=' * 80}\n")
+        out_file.write(f"{'=' * 80}\n\n")
         out_file.write(f"{license}\n\n\n")
