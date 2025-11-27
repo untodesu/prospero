@@ -15,4 +15,24 @@ Menu {
         Accessible.name: qsTr("Clear Chat")
         Accessible.description: qsTr("Clears all messages from the chat window")
     }
+
+    MenuSeparator {}
+
+    Action {
+        text: qsTr("Mute Notifications")
+
+        checkable: true
+
+        Accessible.name: qsTr("Mute Notifications")
+        Accessible.description: qsTr("Toggles chat notification sounds")
+    }
+
+    Action {
+        text: qsTr("Mute Mentions")
+
+        checkable: true
+
+        Accessible.name: qsTr("Mute Mentions")
+        Accessible.description: qsTr("Toggles mention notification sounds")
+    }
 }

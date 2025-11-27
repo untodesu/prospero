@@ -61,7 +61,17 @@ void Settings::load_from_config(void)
 {
     Config config(m_config_path);
 
-    m_username = QString::fromStdString(std::string(config.value<std::string_view>("username", "prosperoclient")));
+    QString default_username = qgetenv("USER");
+
+    if(default_username.isEmpty()) {
+        default_username = qgetenv("USERNAME");
+    }
+
+    if(default_username.isEmpty()) {
+        default_username = "prosperoclient";
+    }
+
+    m_username = QString::fromStdString(std::string(config.value<std::string_view>("username", default_username.toStdString())));
 
     auto public_key_hexstring = config.value<std::string_view>("public_key");
     auto private_key_hexstring = config.value<std::string_view>("private_key");
