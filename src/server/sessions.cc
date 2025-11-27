@@ -85,9 +85,9 @@ static bool authenticate_session(Session* session, const AuthResponse& packet)
     authenticated = authenticated && userlist::lookup(packet.public_key);
 
     if(!settings::auth::allow_dopplegangers) {
-        auto doppleganger = sessions::lookup(packet.public_key);
+        auto original_session = sessions::lookup(packet.public_key);
 
-        if(doppleganger && doppleganger->aes_context) {
+        if(original_session && original_session->aes_context) {
             authenticated = false;
         }
     }
