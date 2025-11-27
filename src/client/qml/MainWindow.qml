@@ -15,26 +15,18 @@ ApplicationWindow {
 
     visible: true
 
-    menuBar: MainWindow_Menu {
-        id: main_window_menu
+    menuBar: MainMenu {
+        id: main_menu
     }
 
-    MainWindow_Chat {
-        id: main_window_chat
+    Chat {
+        id: chat
 
         anchors.fill: parent
         anchors.margins: 4
     }
 
-    MainWindow_Dialog_About {
-        id: about_dialog
-    }
-
-    MainWindow_Dialog_ConnectByAddress {
-        id: connect_by_address_dialog
-    }
-
-    MainWindow_Dialog_Settings {
-        id: settings_dialog
+    Greeter {
+        id: greeter
     }
 }

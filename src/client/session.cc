@@ -35,6 +35,8 @@ Session::Session(QObject* parent) : QObject(parent)
     connect(m_host_timer, &QTimer::timeout, this, &Session::update_host);
 
     reset_session_data();
+
+    connect(this, &Session::address_resolved, this, &Session::perform_connection);
 }
 
 Session::~Session(void)
@@ -67,23 +69,23 @@ const QString& Session::assigned_username(void) const
 void Session::connect_to_host(const QString& full_address)
 {
     quint16 port;
-    QLatin1String host;
+    QString host;
 
     auto separator = full_address.indexOf(':');
 
     if(separator < 0) {
-        host = QLatin1String(full_address.toLatin1().constData());
+        host = full_address;
         port = 18137U; // default port
     }
     else {
-        host = QLatin1String(full_address.left(separator).toLatin1().constData());
+        host = full_address.left(separator);
         port = static_cast<quint16>(full_address.mid(separator + 1).toUShort());
     }
 
-    connect_to_host(host, port);
+    connect_to_host(host.toStdString(), port);
 }
 
-void Session::connect_to_host(const QLatin1String& host, quint16 port)
+void Session::connect_to_host(const std::string& host, quint16 port)
 {
     if(m_server) {
         enet_peer_disconnect(m_server, 0U);
@@ -91,31 +93,18 @@ void Session::connect_to_host(const QLatin1String& host, quint16 port)
         reset_session_data();
     }
 
-    ENetAddress address = {};
-    enet_address_set_host(&address, host.latin1());
-    address.port = port;
+    emit connection_started();
 
-    m_server = enet_host_connect(m_host, &address, 1U, 0U);
+    auto host_copy = std::string(host);
+    auto port_copy = port;
 
-    if(m_server) {
-        thread_local ENetEvent event;
+    auto future = QtConcurrent::run([this, host_copy, port_copy] {
+        ENetAddress address;
+        enet_address_set_host(&address, host_copy.c_str());
+        address.port = port_copy;
 
-        for(int i = 0; i < 150; ++i) {
-            if(0 < enet_host_service(m_host, &event, 10U)) {
-                if(event.type == ENET_EVENT_TYPE_CONNECT) {
-                    emit connection_changed();
-                    return;
-                }
-            }
-
-            QCoreApplication::processEvents();
-        }
-    }
-
-    enet_peer_reset(m_server);
-    reset_session_data();
-
-    add_notification_generic(QDateTime::currentDateTime(), tr("Failed to connect to server"));
+        emit address_resolved(address);
+    });
 }
 
 void Session::disconnect_from_host(void)
@@ -127,17 +116,17 @@ void Session::disconnect_from_host(void)
 
 void Session::add_notification_user_join(const QDateTime& timestamp, const QString& username)
 {
-    emit system_message_received(timestamp, tr("%1 connected to the server").arg(username));
+    emit notification_received(timestamp, tr("%1 connected to the server").arg(username));
 }
 
 void Session::add_notification_user_left(const QDateTime& timestamp, const QString& username)
 {
-    emit system_message_received(timestamp, tr("%1 disconnected from the server").arg(username));
+    emit notification_received(timestamp, tr("%1 disconnected from the server").arg(username));
 }
 
 void Session::add_notification_generic(const QDateTime& timestamp, const QString& message)
 {
-    emit system_message_received(timestamp, message);
+    emit notification_received(timestamp, message);
 }
 
 void Session::send_text_message(const QString& message)
@@ -157,6 +146,30 @@ void Session::send_text_message(const QString& message)
     TextMessage::serialize(m_aes_context, buffer, packet);
 
     enet_peer_send(m_server, 0U, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+}
+
+void Session::perform_connection(ENetAddress address)
+{
+    m_server = enet_host_connect(m_host, &address, 1U, 0U);
+
+    thread_local ENetEvent event;
+
+    if(m_server) {
+        for(int i = 0; i < 150; ++i) {
+            if(0 < enet_host_service(m_host, &event, 10U)) {
+                if(event.type == ENET_EVENT_TYPE_CONNECT) {
+                    emit connection_changed();
+                    return;
+                }
+            }
+        }
+    }
+
+    enet_peer_reset(m_server);
+    reset_session_data();
+
+    emit notification_received(QDateTime::currentDateTime(), tr("Failed to connect to the server"));
+    emit connection_changed();
 }
 
 void Session::update_host(void)

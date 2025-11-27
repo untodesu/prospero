@@ -4,7 +4,7 @@ import QtQuick.Layouts 1.15
 import QtQml.Models
 
 ListView {
-    id: main_window_chat_messages
+    id: chat_messages
 
     Layout.fillWidth: true
     Layout.fillHeight: true
@@ -22,12 +22,12 @@ ListView {
     }
 
     delegate: DelegateChooser {
-        role: "is_system_message"
+        role: "is_notification"
 
         DelegateChoice {
             roleValue: true
 
-            MainWindow_Chat_NotificationDelegate {
+            Chat_Delegate_Notification {
                 timestamp: model.timestamp
                 message: model.message
             }
@@ -36,7 +36,7 @@ ListView {
         DelegateChoice {
             roleValue: false
 
-            MainWindow_Chat_TextMessageDelegate {
+            Chat_Delegate_TextMessage {
                 timestamp: model.timestamp
                 username: model.username
                 message: model.message
@@ -47,26 +47,26 @@ ListView {
     Connections {
         target: g_session
 
-        function onSystem_message_received(timestamp, message) {
+        function onNotification_received(timestamp, message) {
             chat_model.append({
-                is_system_message: true,
+                is_notification: true,
                 username: qsTr("System Message"),
                 timestamp: timestamp,
                 message: message
             });
 
-            main_window_chat_messages.positionViewAtEnd();
+            chat_messages.positionViewAtEnd();
         }
 
         function onText_message_received(timestamp, username, message) {
             chat_model.append({
-                is_system_message: false,
+                is_notification: false,
                 username: username,
                 timestamp: timestamp,
                 message: message
             });
 
-            main_window_chat_messages.positionViewAtEnd();
+            chat_messages.positionViewAtEnd();
         }
     }
 

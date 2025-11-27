@@ -20,7 +20,7 @@ set(CMAKE_AUTOUIC ON CACHE BOOL "" FORCE)
 
 file(TO_CMAKE_PATH "$ENV{QTDIR}" QT_INSTALL_ROOT)
 list(APPEND CMAKE_PREFIX_PATH "${QT_INSTALL_ROOT}/lib/cmake")
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2 Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Concurrent Core Gui Qml Quick QuickControls2 Widgets)
 qt_standard_project_setup(REQUIRES 6.9)
 
 if(MSVC)

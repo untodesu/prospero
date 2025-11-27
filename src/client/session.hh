@@ -33,7 +33,7 @@ public:
 
 public:
     Q_INVOKABLE void connect_to_host(const QString& full_address);
-    Q_INVOKABLE void connect_to_host(const QLatin1String& host, quint16 port);
+    Q_INVOKABLE void connect_to_host(const std::string& host, quint16 port);
     Q_INVOKABLE void disconnect_from_host(void);
 
     Q_INVOKABLE void add_notification_user_join(const QDateTime& timestamp, const QString& username);
@@ -44,10 +44,14 @@ public:
 
 signals:
     void connection_changed(void);
-    void system_message_received(const QDateTime& timetamp, const QString& message);
+    void connection_started(void);
+    void notification_received(const QDateTime& timetamp, const QString& message);
     void text_message_received(const QDateTime& timetamp, const QString& username, const QString& message);
 
+    void address_resolved(ENetAddress address);
+
 private slots:
+    void perform_connection(ENetAddress address);
     void update_host(void);
 
 private:

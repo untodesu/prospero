@@ -57,7 +57,9 @@
 #include <QQuickStyle>
 #include <QRandomGenerator>
 #include <QStandardPaths>
+#include <QThreadPool>
 #include <QTimer>
+#include <QtConcurrent>
 #include <QtGlobal>
 
 #endif

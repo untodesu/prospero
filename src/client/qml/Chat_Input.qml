@@ -3,13 +3,19 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 RowLayout {
-    id: main_window_chat_input
+    id: chat_input
+
+    signal message_sent(string message)
+
+    Component.onCompleted: {
+        message_sent.connect(g_session.send_text_message);
+    }
 
     Layout.fillWidth: true
     Layout.fillHeight: false
 
     ScrollView {
-        id: message_scroll_view
+        id: scroll_view
 
         Layout.fillWidth: true
         Layout.fillHeight: true
@@ -73,7 +79,7 @@ RowLayout {
             let message = message_input.text.trim();
 
             if (message.length > 0 && g_session.is_authenticated) {
-                g_session.send_text_message(message);
+                message_sent(message);
                 message_input.focus = true;
                 message_input.clear();
             }

@@ -8,6 +8,8 @@ qt_add_executable(prospero
     "${CMAKE_CURRENT_LIST_DIR}/clipboard.hh"
     "${CMAKE_CURRENT_LIST_DIR}/main.cc"
     "${CMAKE_CURRENT_LIST_DIR}/precompiled.hh"
+    "${CMAKE_CURRENT_LIST_DIR}/recents.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/recents.hh"
     "${CMAKE_CURRENT_LIST_DIR}/session.cc"
     "${CMAKE_CURRENT_LIST_DIR}/session.hh"
     "${CMAKE_CURRENT_LIST_DIR}/settings.cc"
@@ -17,7 +19,7 @@ qt_add_executable(prospero
 target_compile_features(prospero PUBLIC cxx_std_20)
 target_include_directories(prospero PUBLIC "${PROSPERO_INCLUDES}")
 target_include_directories(prospero PRIVATE "${PROSPERO_SOURCES}")
-target_link_libraries(prospero PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Widgets)
+target_link_libraries(prospero PRIVATE Qt6::Concurrent Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2 Qt6::Widgets)
 target_link_libraries(prospero PRIVATE core enet)
 
 target_precompile_headers(prospero PRIVATE "${CMAKE_CURRENT_LIST_DIR}/precompiled.hh")

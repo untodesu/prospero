@@ -3,13 +3,13 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 Menu {
-    title: qsTr("Chat")
+    title: qsTr("View")
 
     Action {
-        text: qsTr("Clear")
+        text: qsTr("Clear Chat")
 
         onTriggered: {
-            main_window_chat.clear();
+            chat.clear();
         }
 
         Accessible.name: qsTr("Clear Chat")

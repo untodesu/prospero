@@ -3,7 +3,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 Rectangle {
-    readonly property color hover_color: palette.button
+    readonly property color hover_color: palette.midlight
     readonly property color normal_color: "transparent"
 
     property var timestamp
@@ -39,13 +39,13 @@ Rectangle {
             readOnly: true
             selectByMouse: true
 
-            color: palette.windowText
+            color: palette.text
         }
 
         Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: false
-            color: palette.windowText
+            color: palette.text
             opacity: 0.25
             width: 2
         }
@@ -67,13 +67,13 @@ Rectangle {
             readOnly: true
             selectByMouse: true
 
-            color: palette.windowText
+            color: palette.text
         }
 
         Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: false
-            color: palette.windowText
+            color: palette.text
             opacity: 0.25
             width: 2
         }
