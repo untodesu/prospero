@@ -46,21 +46,40 @@ ApplicationWindow {
 
         function onText_message_received(timestamp, username, message) {
             if(username === g_session.assigned_username) {
+                console.log("ignoring self");
                 return; // Don't show notifications for our own messages
             }
 
-            if(main_window.visible) {
-                return; // Don't show notifications if the main window is visible
+            let is_in_focus = true;
+            is_in_focus = is_in_focus && main_window.visibility !== Window.Hidden;
+            is_in_focus = is_in_focus && main_window.visibility !== Window.Minimized;
+            is_in_focus = is_in_focus && main_window.active === true;
+
+            if(is_in_focus) {
+                console.log("ignoring focus");
+                return; // Window is in focus
             }
 
-            if(!g_settings.mute_mentions) {
+            if(g_settings.mute_mentions === true && g_settings.mute_messages === true) {
+                console.log("ignore all muted");
+                return; // All notifications are muted
+            }
+
+            let should_send_notification = false;
+
+            if(g_settings.mute_mentions === false) {
                 const mentions = message.match(/\@[a-zA-Z0-9_\-\.]+/g);
 
                 if(mentions && mentions.includes(`@${g_session.assigned_username}`)) {
-                    tray_icon.showMessage(username, message);
+                    should_send_notification = true;
                 }
             }
-            else if(!g_settings.mute_messages) {
+
+            if(g_settings.mute_messages === false) {
+                should_send_notification = true;
+            }
+
+            if(should_send_notification === true) {
                 tray_icon.showMessage(username, message);
             }
         }
