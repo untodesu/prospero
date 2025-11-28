@@ -65,6 +65,7 @@
 #include <QTextStream>
 #include <QThreadPool>
 #include <QTimer>
+#include <QTranslator>
 #include <QtConcurrent>
 #include <QtGlobal>
 

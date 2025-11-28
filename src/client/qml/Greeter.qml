@@ -128,7 +128,9 @@ Rectangle {
                 Label {
                     Layout.fillWidth: false
                     Layout.fillHeight: true
+
                     text: qsTr("Username:")
+
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignRight
                 }
@@ -154,14 +156,15 @@ Rectangle {
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignLeft
 
-                    Accessible.name: qsTr("Username Input Field")
-                    Accessible.description: qsTr("Field to type the desired username for the session")
+                    ToolTip.text: qsTr("Desired username sent to Prospero servers upon connection")
                 }
 
                 Label {
                     Layout.fillWidth: false
                     Layout.fillHeight: true
+
                     text: qsTr("Identity:")
+
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignRight
                 }
@@ -185,8 +188,7 @@ Rectangle {
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignLeft
 
-                        Accessible.name: qsTr("Identity Display Field")
-                        Accessible.description: qsTr("Field displaying the public key identity")
+                        ToolTip.text: qsTr("An Ed25519 public key used for authentication and encryption with Prospero servers")
                     }
 
                     Button {
@@ -198,9 +200,6 @@ Rectangle {
                         onClicked: {
                             g_clipboard.set_text(g_settings.public_key);
                         }
-
-                        Accessible.name: qsTr("Copy Identity Button")
-                        Accessible.description: qsTr("Button to copy the public key identity to the clipboard")
                     }
                 }
             }
@@ -345,9 +344,6 @@ Rectangle {
                             event.accepted = true;
                         }
                     }
-
-                    Accessible.name: qsTr("Connect by Address Input Field")
-                    Accessible.description: qsTr("Field to type the address or address and port of the host to connect to")
                 }
 
                 Button {
@@ -368,9 +364,6 @@ Rectangle {
                             g_session.connect_to_host(address_field.text);
                         }
                     }
-
-                    Accessible.name: qsTr("Connect by Address Button")
-                    Accessible.description: qsTr("Button to connect to the host specified in the input field")
                 }
 
                 Connections {

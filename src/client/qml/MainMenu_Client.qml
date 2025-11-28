@@ -15,9 +15,6 @@ Menu {
 
             chat.clear();
         }
-
-        Accessible.name: qsTr("Disconnect from Host")
-        Accessible.description: qsTr("Disconnects the client from the currently connected host")    
     }
 
     MenuSeparator {}
@@ -30,9 +27,6 @@ Menu {
 
             Qt.quit();
         }
-
-        Accessible.name: qsTr("Quit Application")
-        Accessible.description: qsTr("Quits the application")
     }
 }
 

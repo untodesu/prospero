@@ -1,40 +1,29 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
 
 Menu {
     title: qsTr("View")
 
     Action {
-        text: qsTr("Minimize on Close")
-
-        checkable: true
-
-        checked: g_settings.minimize_on_close
+        text: qsTr("Clear Chat")
 
         onTriggered: {
-            g_settings.minimize_on_close = checked;
+            chat.clear();
         }
-
-        Accessible.name: qsTr("Minimize on Close")
-        Accessible.description: qsTr("Toggles whether the application minimizes to the system tray when the window is closed")
     }
 
     MenuSeparator {}
 
     Action {
-        text: qsTr("Show Timestamps")
+        text: qsTr("Hide on Close")
 
         checkable: true
 
-        checked: g_settings.show_timestamps
+        checked: g_settings.hide_on_close
 
         onTriggered: {
-            g_settings.show_timestamps = checked;
+            g_settings.hide_on_close = checked;
         }
-
-        Accessible.name: qsTr("Show Timestamps")
-        Accessible.description: qsTr("Toggles the display of timestamps in chat messages")
     }
 
     MenuSeparator {}
@@ -49,9 +38,6 @@ Menu {
         onTriggered: {
             g_settings.mute_messages = checked;
         }
-
-        Accessible.name: qsTr("Mute Messages")
-        Accessible.description: qsTr("Toggles chat message sounds")
     }
 
     Action {
@@ -64,21 +50,5 @@ Menu {
         onTriggered: {
             g_settings.mute_mentions = checked;
         }
-
-        Accessible.name: qsTr("Mute Mentions")
-        Accessible.description: qsTr("Toggles mention notification sounds")
-    }
-
-    MenuSeparator {}
-    
-    Action {
-        text: qsTr("Clear Chat")
-
-        onTriggered: {
-            chat.clear();
-        }
-
-        Accessible.name: qsTr("Clear Chat")
-        Accessible.description: qsTr("Clears all messages from the chat window")
     }
 }

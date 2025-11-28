@@ -8,6 +8,8 @@ SystemTrayIcon {
 
     icon.source: "qrc:/res/icons/prospero.ico"
 
+    tooltip: qsTr("Prospero")
+
     onActivated: function(reason) {
         if(reason == SystemTrayIcon.DoubleClick) {
             main_window.visible = true;
@@ -40,16 +42,26 @@ SystemTrayIcon {
         MenuSeparator {}
 
         MenuItem {
-            text: qsTr("Show Main Window")
+            text: qsTr("Mute Messages")
 
-            enabled: !main_window.visible
+            checkable: true
 
-            font.bold: true
+            checked: g_settings.mute_messages
 
             onTriggered: {
-                main_window.visible = true;
-                main_window.raise();
-                main_window.requestActivate();
+                g_settings.mute_messages = checked;
+            }
+        }
+
+        MenuItem {
+            text: qsTr("Mute Mentions")
+
+            checkable: true
+
+            checked: g_settings.mute_mentions
+
+            onTriggered: {
+                g_settings.mute_mentions = checked;
             }
         }
 

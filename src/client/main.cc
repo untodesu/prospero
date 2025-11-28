@@ -40,8 +40,6 @@ int main(int argc, char** argv)
 
         app.setWindowIcon(QIcon(":/res/icons/prospero.ico"));
 
-        QQuickStyle::setStyle("Fusion");
-
         QFont roboto_font(QFontDatabase::applicationFontFamilies(roboto_id).constFirst());
         QFont roboto_mono_font(QFontDatabase::applicationFontFamilies(roboto_mono_id).constFirst());
 
@@ -63,6 +61,29 @@ int main(int argc, char** argv)
         Session::instance = new Session(&app);
         Settings::instance = new Settings(&app);
         Version::instance = new Version(&app);
+
+        auto& override_language = Settings::instance->language();
+        auto language_loaded = false;
+
+        QTranslator translator;
+
+        if(override_language.size()) {
+            language_loaded = translator.load(QString(":/lang/prospero_%1.qm").arg(override_language));
+        }
+
+        if(!language_loaded) {
+            for(auto& locale_tag : QLocale::system().uiLanguages()) {
+                language_loaded = translator.load(QString(":/lang/prospero_%1.qm").arg(locale_tag));
+
+                if(language_loaded) {
+                    break;
+                }
+            }
+        }
+
+        if(language_loaded) {
+            app.installTranslator(&translator);
+        }
 
         auto context = qml->rootContext();
 

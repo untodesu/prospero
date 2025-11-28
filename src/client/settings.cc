@@ -26,33 +26,27 @@ Settings::~Settings(void)
     save_to_config();
 }
 
-bool Settings::minimize_on_close(void) const
+const QString& Settings::language(void) const
 {
-    return m_minimize_on_close;
+    return m_language;
 }
 
-void Settings::set_minimize_on_close(bool minimize)
+QString Settings::theme(void) const
 {
-    if(m_minimize_on_close != minimize) {
-        m_minimize_on_close = minimize;
-
-        emit minimize_on_close_changed();
-
-        save_to_config();
-    }
+    return QQuickStyle::name();
 }
 
-bool Settings::show_timestamps(void) const
+bool Settings::hide_on_close(void) const
 {
-    return m_show_timestamps;
+    return m_hide_on_close;
 }
 
-void Settings::set_show_timestamps(bool show)
+void Settings::set_hide_on_close(bool hide)
 {
-    if(m_show_timestamps != show) {
-        m_show_timestamps = show;
+    if(m_hide_on_close != hide) {
+        m_hide_on_close = hide;
 
-        emit show_timestamps_changed();
+        emit hide_on_close_changed();
 
         save_to_config();
     }
@@ -135,9 +129,11 @@ void Settings::load_from_config(void)
         default_username = "prosperoclient";
     }
 
-    m_minimize_on_close = config.value<bool>("minimize_on_close", true);
+    QQuickStyle::setStyle(QString::fromStdString(std::string(config.value<std::string_view>("theme", "Fusion"))));
 
-    m_show_timestamps = config.value<bool>("show_timestamps", true);
+    m_language = QString::fromStdString(std::string(config.value<std::string_view>("language", std::string_view())));
+
+    m_hide_on_close = config.value<bool>("hide_on_close", true);
 
     m_mute_messages = config.value<bool>("mute_messages", false);
     m_mute_mentions = config.value<bool>("mute_mentions", false);
@@ -164,9 +160,16 @@ void Settings::save_to_config(void)
 {
     Config config;
 
-    config.set_value<bool>("minimize_on_close", m_minimize_on_close);
+    config.set_value<std::string_view>("theme", QQuickStyle::name().toStdString());
 
-    config.set_value<bool>("show_timestamps", m_show_timestamps);
+    if(m_language.size()) {
+        // Only save the language value if it's not empty; this is done
+        // to have Qt first try to use the system locale by default, and
+        // if the user _needs_ to force a specific language, they can set it in the config
+        config.set_value<std::string_view>("language", m_language.toStdString());
+    }
+
+    config.set_value<bool>("hide_on_close", m_hide_on_close);
 
     config.set_value<bool>("mute_messages", m_mute_messages);
     config.set_value<bool>("mute_mentions", m_mute_mentions);

@@ -34,6 +34,8 @@ target_link_libraries(prospero PRIVATE
     Qt6::Widgets)
 target_link_libraries(prospero PRIVATE core enet)
 
+add_subdirectory(lang)
+
 target_precompile_headers(prospero PRIVATE "${CMAKE_CURRENT_LIST_DIR}/precompiled.hh")
 
 # set_target_properties(prospero PROPERTIES WIN32_EXECUTABLE TRUE)

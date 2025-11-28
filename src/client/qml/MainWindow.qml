@@ -20,7 +20,7 @@ ApplicationWindow {
     }
 
     onClosing: function(close) {
-        if(g_settings.minimize_on_close) {
+        if(g_settings.hide_on_close) {
             main_window.visible = false;
             close.accepted = false;
             tray_icon.show();

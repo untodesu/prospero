@@ -29,9 +29,10 @@ Rectangle {
             Layout.fillHeight: true
 
             font.family: g_roboto_mono_font.family
-            font.pointSize: 10
+            font.italic: true
+            font.pointSize: 8
 
-            opacity: 0.5
+            opacity: 0.25
 
             text: Qt.formatDateTime(timestamp, "hh:mm:ss")
 
@@ -42,8 +43,6 @@ Rectangle {
             selectByMouse: true
 
             color: palette.text
-
-            visible: g_settings.show_timestamps
         }
 
         Rectangle {
@@ -51,11 +50,9 @@ Rectangle {
             Layout.fillWidth: false
 
             color: palette.text
-            opacity: 0.25
+            opacity: 0.125
 
-            width: 2
-
-            visible: g_settings.show_timestamps
+            width: 1
         }
 
         TextEdit {
@@ -83,9 +80,9 @@ Rectangle {
             Layout.fillWidth: false
 
             color: palette.text
-            opacity: 0.25
+            opacity: 0.125
 
-            width: 2
+            width: 1
         }
 
         TextEdit {

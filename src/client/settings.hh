@@ -11,8 +11,9 @@
 
 class Settings final : public QObject {
     Q_OBJECT
-    Q_PROPERTY(bool minimize_on_close READ minimize_on_close WRITE set_minimize_on_close NOTIFY minimize_on_close_changed)
-    Q_PROPERTY(bool show_timestamps READ show_timestamps WRITE set_show_timestamps NOTIFY show_timestamps_changed)
+    Q_PROPERTY(QString theme READ theme CONSTANT)
+    Q_PROPERTY(QString language READ language CONSTANT)
+    Q_PROPERTY(bool hide_on_close READ hide_on_close WRITE set_hide_on_close NOTIFY hide_on_close_changed)
     Q_PROPERTY(bool mute_messages READ mute_messages WRITE set_mute_messages NOTIFY mute_messages_changed)
     Q_PROPERTY(bool mute_mentions READ mute_mentions WRITE set_mute_mentions NOTIFY mute_mentions_changed)
     Q_PROPERTY(QString username READ username WRITE set_username NOTIFY username_changed)
@@ -24,11 +25,12 @@ public:
     explicit Settings(QObject* parent = nullptr);
     virtual ~Settings(void) override;
 
-    bool minimize_on_close(void) const;
-    void set_minimize_on_close(bool minimize);
+    QString theme(void) const;
 
-    bool show_timestamps(void) const;
-    void set_show_timestamps(bool show);
+    const QString& language(void) const;
+
+    bool hide_on_close(void) const;
+    void set_hide_on_close(bool hide);
 
     bool mute_messages(void) const;
     void set_mute_messages(bool mute);
@@ -44,8 +46,7 @@ public:
     const ed25519::skey_buffer& private_key_buffer(void) const;
 
 signals:
-    void minimize_on_close_changed(void);
-    void show_timestamps_changed(void);
+    void hide_on_close_changed(void);
     void mute_messages_changed(void);
     void mute_mentions_changed(void);
     void username_changed(void);
@@ -56,7 +57,9 @@ private:
 
     std::filesystem::path m_config_path;
 
-    bool m_minimize_on_close;
+    QString m_language;
+
+    bool m_hide_on_close;
 
     bool m_show_timestamps;
 

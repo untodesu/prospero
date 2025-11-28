@@ -49,9 +49,6 @@ RowLayout {
 
             horizontalAlignment: TextArea.AlignLeft
             verticalAlignment: TextArea.AlignVCenter
-            
-            Accessible.name: qsTr("Message Input Field")
-            Accessible.description: qsTr("Field to type your message before sending")
         }
 
         ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -85,8 +82,7 @@ RowLayout {
             }
         }
 
-        Accessible.name: qsTr("Send Message Button")
-        Accessible.description: qsTr("Button to send the typed message")
+        ToolTip.text: qsTr("Send Message")
     }
 
     Keys.forwardTo: [message_input]

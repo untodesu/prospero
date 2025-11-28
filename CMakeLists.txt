@@ -34,6 +34,7 @@ if(BUILD_CLIENT)
         Concurrent
         Core
         Gui
+        LinguistTools
         Network
         Qml
         Quick
