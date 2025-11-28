@@ -9,21 +9,26 @@
 
 struct Session;
 
-using CommandHandler = void (*)(Session* sender, const std::vector<std::string_view>& arguments);
-
-struct Command final {
-    std::uint32_t permission {};
-    CommandHandler handler {};
+enum class CommandGroup : unsigned int {
+    General = 0U, ///< General commands available to all users
+    IrcLike,      ///< General commands available to all users, except for IRC-like commands
+    Admin,        ///< Administration commands, available to sessions with PERM_OPER and higher
+    Root,         ///< Root commands, available to sessions with PERM_ROOT
+    COUNT         ///< Number of command groups
 };
+
+constexpr static std::size_t NUM_COMMAND_GROUPS = static_cast<std::size_t>(CommandGroup::COUNT);
+
+using CommandHandler = void (*)(Session* sender, const std::vector<std::string_view>& arguments);
 
 namespace commands
 {
-extern std::unordered_map<std::string, Command> map;
+extern std::array<std::unordered_map<std::string, std::pair<CommandHandler, std::string>>, NUM_COMMAND_GROUPS> groups;
 } // namespace commands
 
 namespace commands
 {
-void add(std::string_view name, const Command& command);
+void add(CommandGroup group, std::string_view name, CommandHandler handler, std::string_view usage = {});
 } // namespace commands
 
 namespace commands

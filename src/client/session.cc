@@ -114,19 +114,34 @@ void Session::disconnect_from_host(void)
     }
 }
 
-void Session::add_notification_user_join(const QDateTime& timestamp, const QString& username)
+void Session::add_notification_peer_join(const QDateTime& timestamp, const QString& username)
 {
     emit notification_received(timestamp, tr("%1 connected to the server").arg(username));
 }
 
-void Session::add_notification_user_left(const QDateTime& timestamp, const QString& username)
+void Session::add_notification_peer_left(const QDateTime& timestamp, const QString& username)
 {
     emit notification_received(timestamp, tr("%1 disconnected from the server").arg(username));
 }
 
-void Session::add_notification_generic(const QDateTime& timestamp, const QString& message)
+void Session::add_notification_text_mesg(const QDateTime& timestamp, const QString& message)
 {
     emit notification_received(timestamp, message);
+}
+
+void Session::add_notification_user_away(const QDateTime& timestamp, const QString& username)
+{
+    emit notification_received(timestamp, tr("%1 is now away").arg(username));
+}
+
+void Session::add_notification_user_back(const QDateTime& timestamp, const QString& username)
+{
+    emit notification_received(timestamp, tr("%1 is no longer away").arg(username));
+}
+
+void Session::add_notification_modr_kick(const QDateTime& timestamp, const QString& username)
+{
+    emit notification_received(timestamp, tr("%1 has been kicked").arg(username));
 }
 
 void Session::send_text_message(const QString& message)
@@ -188,7 +203,7 @@ void Session::update_host(void)
         }
 
         if(event.type == ENET_EVENT_TYPE_DISCONNECT) {
-            add_notification_generic(QDateTime::currentDateTime(), tr("Disconnected from server"));
+            add_notification_text_mesg(QDateTime::currentDateTime(), tr("Disconnected from server"));
             reset_session_data();
             emit connection_changed();
             continue;
@@ -274,14 +289,14 @@ void Session::handle_auth_request(const AuthRequest& packet)
 
     if(version::major < packet.version_major) {
         auto message = tr("Outdated client! Server runs on %1").arg(server_version_string);
-        add_notification_generic(QDateTime::currentDateTime(), message);
+        add_notification_text_mesg(QDateTime::currentDateTime(), message);
         enet_peer_disconnect(m_server, 0U);
         return;
     }
 
     if(version::major > packet.version_major) {
         auto message = tr("Outdated server! Server runs on %1").arg(client_version_string);
-        add_notification_generic(QDateTime::currentDateTime(), message);
+        add_notification_text_mesg(QDateTime::currentDateTime(), message);
         enet_peer_disconnect(m_server, 0U);
         return;
     }
@@ -292,7 +307,7 @@ void Session::handle_auth_request(const AuthRequest& packet)
 
     if(!version_full_compatible) {
         auto message = tr("Potentially incompatible versions [SV %1 // CL %2]").arg(server_version_string).arg(client_version_string);
-        add_notification_generic(QDateTime::currentDateTime(), message);
+        add_notification_text_mesg(QDateTime::currentDateTime(), message);
     }
 
     auto& public_key = Settings::instance->public_key_buffer();
@@ -334,16 +349,28 @@ void Session::handle_notification(const Notification& packet)
     auto text = QString::fromStdString(packet.text);
 
     switch(packet.type) {
-        case Notification::T_USER_JOIN:
-            add_notification_user_join(timestamp, text);
+        case Notification::T_PEER_JOIN:
+            add_notification_peer_join(timestamp, text);
             break;
 
-        case Notification::T_USER_LEFT:
-            add_notification_user_left(timestamp, text);
+        case Notification::T_PEER_LEFT:
+            add_notification_peer_left(timestamp, text);
             break;
 
         case Notification::T_TEXT_MESG:
-            add_notification_generic(timestamp, text);
+            add_notification_text_mesg(timestamp, text);
+            break;
+
+        case Notification::T_USER_AWAY:
+            add_notification_user_away(timestamp, text);
+            break;
+
+        case Notification::T_USER_BACK:
+            add_notification_user_back(timestamp, text);
+            break;
+
+        case Notification::T_MODR_KICK:
+            add_notification_modr_kick(timestamp, text);
             break;
 
         default:

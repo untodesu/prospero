@@ -8,8 +8,10 @@
 #include "core/exception.hh"
 #include "core/version.hh"
 
-#include "server/commands_base.hh"
-#include "server/commands_userlist.hh"
+#include "server/commands_admin.hh"
+#include "server/commands_general.hh"
+#include "server/commands_irclike.hh"
+#include "server/commands_root.hh"
 #include "server/host.hh"
 #include "server/identity.hh"
 #include "server/sessions.hh"
@@ -68,8 +70,10 @@ int main(int argc, char** argv)
 
         host::init();
 
-        commands::base::init();
-        commands::userlist::init();
+        commands::admin::init();
+        commands::general::init();
+        commands::irclike::init();
+        commands::root::init();
 
         std::signal(SIGINT, &signal_handler);
         std::signal(SIGTERM, &signal_handler);

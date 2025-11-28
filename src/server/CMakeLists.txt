@@ -4,12 +4,16 @@
 ## Description: Server executable build configuration
 
 add_executable(prospero-server
+    "${CMAKE_CURRENT_LIST_DIR}/commands_admin.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_admin.hh"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_general.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_general.hh"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_irclike.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_irclike.hh"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_root.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/commands_root.hh"
     "${CMAKE_CURRENT_LIST_DIR}/commands.cc"
     "${CMAKE_CURRENT_LIST_DIR}/commands.hh"
-    "${CMAKE_CURRENT_LIST_DIR}/commands_base.cc"
-    "${CMAKE_CURRENT_LIST_DIR}/commands_base.hh"
-    "${CMAKE_CURRENT_LIST_DIR}/commands_userlist.cc"
-    "${CMAKE_CURRENT_LIST_DIR}/commands_userlist.hh"
     "${CMAKE_CURRENT_LIST_DIR}/host.cc"
     "${CMAKE_CURRENT_LIST_DIR}/host.hh"
     "${CMAKE_CURRENT_LIST_DIR}/identity.cc"

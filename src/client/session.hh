@@ -36,9 +36,12 @@ public:
     Q_INVOKABLE void connect_to_host(const std::string& host, quint16 port);
     Q_INVOKABLE void disconnect_from_host(void);
 
-    Q_INVOKABLE void add_notification_user_join(const QDateTime& timestamp, const QString& username);
-    Q_INVOKABLE void add_notification_user_left(const QDateTime& timestamp, const QString& username);
-    Q_INVOKABLE void add_notification_generic(const QDateTime& timestamp, const QString& message);
+    Q_INVOKABLE void add_notification_peer_join(const QDateTime& timestamp, const QString& username);
+    Q_INVOKABLE void add_notification_peer_left(const QDateTime& timestamp, const QString& username);
+    Q_INVOKABLE void add_notification_text_mesg(const QDateTime& timestamp, const QString& message);
+    Q_INVOKABLE void add_notification_user_away(const QDateTime& timestamp, const QString& username);
+    Q_INVOKABLE void add_notification_user_back(const QDateTime& timestamp, const QString& username);
+    Q_INVOKABLE void add_notification_modr_kick(const QDateTime& timestamp, const QString& username);
 
     Q_INVOKABLE void send_text_message(const QString& message);
 

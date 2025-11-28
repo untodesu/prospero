@@ -107,7 +107,7 @@ static bool authenticate_session(Session* session, const AuthResponse& packet)
         response.assigned_username = session->username;
         sessions::send_packet(session, response);
 
-        sessions::broadcast_notification(Notification::T_USER_JOIN, session->username);
+        sessions::broadcast_notification(Notification::T_PEER_JOIN, session->username);
     }
 
     return authenticated;
@@ -194,7 +194,7 @@ void sessions::remove(ENetPeer* peer)
             username_map.erase(session->username);
             username_set.erase(session->username);
 
-            sessions::broadcast_notification(Notification::T_USER_LEFT, session->username);
+            sessions::broadcast_notification(Notification::T_PEER_LEFT, session->username);
 
             reset_session_data(session);
         }

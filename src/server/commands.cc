@@ -14,15 +14,28 @@
 #include "server/sessions.hh"
 #include "server/userlist.hh"
 
-std::unordered_map<std::string, Command> commands::map;
+constexpr static std::array<std::uint32_t, NUM_COMMAND_GROUPS> GROUP_PERMISSIONS = {
+    PERM_USER, ///< CommandGroup::General
+    PERM_USER, ///< CommandGroup::IrcLike
+    PERM_OPER, ///< CommandGroup::Admin
+    PERM_ROOT, ///< CommandGroup::Root
+};
 
-void commands::add(std::string_view name, const Command& command)
+std::array<std::unordered_map<std::string, std::pair<CommandHandler, std::string>>, NUM_COMMAND_GROUPS> commands::groups;
+
+void commands::add(CommandGroup group, std::string_view name, CommandHandler handler, std::string_view usage)
 {
-    assert(name.size());
-    assert(command.permission);
-    assert(command.handler);
+    auto group_index = static_cast<std::size_t>(group);
 
-    map.insert_or_assign(std::string(name), command);
+    assert(group_index < NUM_COMMAND_GROUPS);
+    assert(name.size());
+    assert(handler);
+
+    for(const auto& group : commands::groups) {
+        assert(0 == group.count(std::string(name)));
+    }
+
+    groups[group_index].insert_or_assign(std::string(name), std::make_pair(handler, std::string(usage)));
 }
 
 void commands::exec(Session* sender, std::string_view name, const std::vector<std::string_view>& arguments)
@@ -31,21 +44,33 @@ void commands::exec(Session* sender, std::string_view name, const std::vector<st
     assert(sender->aes_context);
     assert(name.size());
 
-    auto it = map.find(std::string(name));
+    CommandHandler handler = nullptr;
+    std::uint32_t required_permission = PERM_NULL;
 
-    if(it == map.cend()) {
+    for(std::size_t i = 0U; i < NUM_COMMAND_GROUPS; ++i) {
+        const auto& map = commands::groups[i];
+        const auto it = map.find(std::string(name));
+
+        if(it != map.cend()) {
+            handler = it->second.first;
+            required_permission = GROUP_PERMISSIONS[i];
+            break;
+        }
+    }
+
+    if(handler == nullptr) {
         sessions::send_notification(sender, Notification::T_TEXT_MESG, std::format("{}: unknown command", name));
         return;
     }
 
     auto permission = userlist::lookup(sender->public_key);
 
-    if(permission < it->second.permission) {
+    if(permission < required_permission) {
         sessions::send_notification(sender, Notification::T_TEXT_MESG, std::format("{}: insufficient permissions", name));
         return;
     }
 
-    it->second.handler(sender, arguments);
+    handler(sender, arguments);
 }
 
 void commands::exec(Session* sender, std::string_view command)

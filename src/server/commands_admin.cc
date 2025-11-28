@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2025 Kirill Dmitrievich
-// File: commands_userlist.cc; Created: Thu Nov 27 2025 14:10:54
-// Description: User list modification commands
+// File: commands_admin.cc; Created: Thu Nov 27 2025 14:10:54
+// Description: CommandGroup::Admin commands
 
 #include "server/precompiled.hh"
 
-#include "server/commands_userlist.hh"
+#include "server/commands_admin.hh"
 
 #include "core/exception.hh"
 #include "core/protocol.hh"
@@ -14,7 +14,7 @@
 #include "server/sessions.hh"
 #include "server/userlist.hh"
 
-static void command_adduser(Session* sender, const std::vector<std::string_view>& arguments)
+static void cmd_adduser(Session* sender, const std::vector<std::string_view>& arguments)
 {
     assert(sender);
     assert(sender->aes_context);
@@ -38,7 +38,7 @@ static void command_adduser(Session* sender, const std::vector<std::string_view>
     sessions::send_notification(sender, Notification::T_TEXT_MESG, "user list modified");
 }
 
-static void command_moduser(Session* sender, const std::vector<std::string_view>& arguments)
+static void cmd_moduser(Session* sender, const std::vector<std::string_view>& arguments)
 {
     assert(sender);
     assert(sender->aes_context);
@@ -90,14 +90,40 @@ static void command_moduser(Session* sender, const std::vector<std::string_view>
     sessions::send_notification(sender, Notification::T_TEXT_MESG, "user list modified");
 }
 
-void commands::userlist::init(void)
+static void cmd_kick(Session* sender, const std::vector<std::string_view>& arguments)
 {
-    Command skeleton;
-    skeleton.permission = PERM_OPER;
+    assert(sender);
+    assert(sender->aes_context);
 
-    skeleton.handler = &command_adduser;
-    commands::add("adduser", skeleton);
+    if(arguments.empty()) {
+        throw core::invalid_argument("missing argument");
+    }
 
-    skeleton.handler = &command_moduser;
-    commands::add("moduser", skeleton);
+    if(auto target = sessions::lookup(std::string(arguments[0]))) {
+        auto target_permission = userlist::lookup(target->public_key);
+        auto my_permission = userlist::lookup(sender->public_key);
+
+        if(target_permission >= my_permission) {
+            throw core::invalid_argument("you have no power here");
+        }
+
+        if(0 == std::memcmp(sender->public_key.data(), target->public_key.data(), sizeof(ed25519::pkey_buffer))) {
+            throw core::invalid_argument("cannot kick yourself");
+        }
+
+        enet_peer_disconnect_later(target->peer, 0U);
+
+        sessions::broadcast_notification(Notification::T_MODR_KICK, target->username);
+
+        return;
+    }
+
+    throw core::invalid_argument("{}: user not found", arguments[0]);
+}
+
+void commands::admin::init(void)
+{
+    commands::add(CommandGroup::Admin, "adduser", &cmd_adduser, "<public_key>");
+    commands::add(CommandGroup::Admin, "moduser", &cmd_moduser, "<username|public_key> <permission>");
+    commands::add(CommandGroup::Admin, "kick", &cmd_kick, "<username>");
 }

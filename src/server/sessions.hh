@@ -21,6 +21,7 @@ struct Session final {
     ed25519::pkey_buffer public_key {};
     ed25519::seed_buffer challenge {};
     std::uint64_t auth_timestamp {};
+    std::string away_message {};
     std::string username;
 };
 

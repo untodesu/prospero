@@ -55,9 +55,12 @@ struct AuthResult final : public BasePacket<PacketType::AuthResult> {
 };
 
 struct Notification final : public BasePacket<PacketType::Notification> {
-    constexpr static std::uint32_t T_USER_JOIN = 0x00000001U; ///< User <text> has connected
-    constexpr static std::uint32_t T_USER_LEFT = 0x00000002U; ///< User <text> has disconnected
+    constexpr static std::uint32_t T_PEER_JOIN = 0x00000001U; ///< User <text> has connected
+    constexpr static std::uint32_t T_PEER_LEFT = 0x00000002U; ///< User <text> has disconnected
     constexpr static std::uint32_t T_TEXT_MESG = 0x00000003U; ///< Generic text message
+    constexpr static std::uint32_t T_USER_AWAY = 0x00000004U; ///< User <text> is now away
+    constexpr static std::uint32_t T_USER_BACK = 0x00000005U; ///< User <text> is no longer away
+    constexpr static std::uint32_t T_MODR_KICK = 0x00000006U; ///< User <text> has been kicked
 
     static void deserialize(aes256::context& context, ReadBuffer& buffer, Notification& packet);
     static void serialize(aes256::context& context, WriteBuffer& buffer, const Notification& packet);

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
 // Copyright (c) 2025 Kirill Dmitrievich
-// File: commands_base.cc; Created: Thu Nov 27 2025 14:09:58
-// Description: Base command set available to all users
+// File: commands_irclike.cc; Created: Sat Nov 29 2025 02:22:38
+// Description: CommandGroup::IrcLike commands
 
 #include "server/precompiled.hh"
 
-#include "server/commands_base.hh"
+#include "server/commands_irclike.hh"
 
 #include "core/exception.hh"
 #include "core/protocol.hh"
@@ -14,25 +14,30 @@
 #include "server/sessions.hh"
 #include "server/userlist.hh"
 
-static void command_list(Session* sender, const std::vector<std::string_view>& arguments)
+static void cmd_away(Session* sender, const std::vector<std::string_view>& arguments)
 {
     assert(sender);
     assert(sender->aes_context);
 
-    std::ostringstream stream;
-
-    for(std::size_t i = 0U; i < sessions::vector.size(); ++i) {
-        if(sessions::vector[i].peer && sessions::vector[i].aes_context) {
-            if(i >= 1U)
-                stream << std::endl;
-            stream << std::format("- {}", sessions::vector[i].username);
-        }
+    if(arguments.empty()) {
+        sender->away_message.clear();
+        sessions::broadcast_notification(Notification::T_USER_BACK, sender->username);
+        return;
     }
 
-    sessions::send_notification(sender, Notification::T_TEXT_MESG, stream.str());
+    std::ostringstream stream;
+
+    for(std::size_t i = 0U; i < arguments.size(); ++i) {
+        if(i > 0U)
+            stream << ' ';
+        stream << arguments[i];
+    }
+
+    sender->away_message = stream.str();
+    sessions::broadcast_notification(Notification::T_USER_AWAY, sender->username);
 }
 
-static void command_rpme(Session* sender, const std::vector<std::string_view>& arguments)
+static void cmd_me(Session* sender, const std::vector<std::string_view>& arguments)
 {
     assert(sender);
     assert(sender->aes_context);
@@ -52,7 +57,12 @@ static void command_rpme(Session* sender, const std::vector<std::string_view>& a
     sessions::broadcast_notification(Notification::T_TEXT_MESG, std::format("* {} {}", sender->username, stream.str()));
 }
 
-static void command_whois(Session* sender, const std::vector<std::string_view>& arguments)
+static void cmd_motd(Session* sender, const std::vector<std::string_view>& arguments)
+{
+    throw core::invalid_argument("not implemented but planned");
+}
+
+static void cmd_whois(Session* sender, const std::vector<std::string_view>& arguments)
 {
     assert(sender);
     assert(sender->aes_context);
@@ -79,17 +89,10 @@ static void command_whois(Session* sender, const std::vector<std::string_view>& 
     sessions::send_notification(sender, Notification::T_TEXT_MESG, std::format("{}: {} {}", target->username, permission_string, public_key));
 }
 
-void commands::base::init(void)
+void commands::irclike::init(void)
 {
-    Command skeleton;
-    skeleton.permission = PERM_USER;
-
-    skeleton.handler = &command_list;
-    commands::add("list", skeleton);
-
-    skeleton.handler = &command_rpme;
-    commands::add("me", skeleton);
-
-    skeleton.handler = &command_whois;
-    commands::add("whois", skeleton);
+    commands::add(CommandGroup::IrcLike, "away", &cmd_away, "[message]");
+    commands::add(CommandGroup::IrcLike, "me", &cmd_me, "<action>");
+    commands::add(CommandGroup::IrcLike, "motd", &cmd_motd, "");
+    commands::add(CommandGroup::IrcLike, "whois", &cmd_whois, "<username>");
 }
