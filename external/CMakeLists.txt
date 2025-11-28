@@ -17,4 +17,4 @@ add_custom_target(thirdparty_txt ALL
     BYPRODUCTS "${PROJECT_BINARY_DIR}/thirdparty.txt"
     DEPENDS "${PROJECT_SOURCE_DIR}/scripts/generate-thirdparty.py"
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}")
-install(FILES "${PROJECT_BINARY_DIR}/thirdparty.txt" DESTINATION ".")
+install(FILES "${PROJECT_BINARY_DIR}/thirdparty.txt" DESTINATION "doc/prospero")

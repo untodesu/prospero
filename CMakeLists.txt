@@ -57,7 +57,7 @@ if(UNIX AND BUILD_SERVER)
     add_subdirectory(systemd)
 endif()
 
-install(FILES "${PROJECT_SOURCE_DIR}/LICENSE" DESTINATION ".")
+install(FILES "${PROJECT_SOURCE_DIR}/LICENSE" DESTINATION "doc/prospero")
 
 set(CPACK_PACKAGE_NAME "Prospero")
 set(CPACK_PACKAGE_VENDOR "untodesu")
