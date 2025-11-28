@@ -118,6 +118,8 @@ Rectangle {
                             reply_lines.push("> " + lines[i]);
                         }
     
+                        reply_lines.push("");
+
                         reply_lines.push("@" + username + " ");
     
                         chat.set_input_text(reply_lines.join("\n"));
