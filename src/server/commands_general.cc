@@ -28,7 +28,7 @@ static void cmd_help(Session* sender, const std::vector<std::string_view>& argum
             auto first_in_group = true;
 
             for(const auto& it : commands::groups[i]) {
-                if(!first_in_group) {
+                if(first_in_group) {
                     first_in_group = false;
                     stream << std::endl;
                 }
