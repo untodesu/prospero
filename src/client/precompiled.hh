@@ -57,8 +57,11 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickStyle>
+#include <QQuickTextDocument>
 #include <QRandomGenerator>
 #include <QStandardPaths>
+#include <QStyleHints>
+#include <QSyntaxHighlighter>
 #include <QTextStream>
 #include <QThreadPool>
 #include <QTimer>

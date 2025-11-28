@@ -6,6 +6,8 @@
 qt_add_executable(prospero
     "${CMAKE_CURRENT_LIST_DIR}/clipboard.cc"
     "${CMAKE_CURRENT_LIST_DIR}/clipboard.hh"
+    "${CMAKE_CURRENT_LIST_DIR}/highlighter.cc"
+    "${CMAKE_CURRENT_LIST_DIR}/highlighter.hh"
     "${CMAKE_CURRENT_LIST_DIR}/ipc.cc"
     "${CMAKE_CURRENT_LIST_DIR}/ipc.hh"
     "${CMAKE_CURRENT_LIST_DIR}/main.cc"

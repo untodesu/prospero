@@ -8,6 +8,7 @@
 #include "core/exception.hh"
 
 #include "client/clipboard.hh"
+#include "client/highlighter.hh"
 #include "client/ipc.hh"
 #include "client/recents.hh"
 #include "client/session.hh"
@@ -48,6 +49,8 @@ int main(int argc, char** argv)
         roboto_mono_font.setPointSize(11);
 
         app.setFont(roboto_regular_font);
+
+        qmlRegisterType<Highlighter>("ProsperoChat", 1, 0, "Highlighter");
 
         auto qml = new QQmlApplicationEngine();
 

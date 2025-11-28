@@ -46,7 +46,6 @@ ApplicationWindow {
 
         function onText_message_received(timestamp, username, message) {
             if(username === g_session.assigned_username) {
-                console.log("ignoring self");
                 return; // Don't show notifications for our own messages
             }
 
@@ -56,12 +55,10 @@ ApplicationWindow {
             is_in_focus = is_in_focus && main_window.active === true;
 
             if(is_in_focus) {
-                console.log("ignoring focus");
                 return; // Window is in focus
             }
 
             if(g_settings.mute_mentions === true && g_settings.mute_messages === true) {
-                console.log("ignore all muted");
                 return; // All notifications are muted
             }
 

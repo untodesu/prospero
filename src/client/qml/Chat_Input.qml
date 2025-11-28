@@ -88,4 +88,10 @@ RowLayout {
         Accessible.name: qsTr("Send Message Button")
         Accessible.description: qsTr("Button to send the typed message")
     }
+
+    function set_text(text) {
+        message_input.text = text;
+        message_input.cursorPosition = message_input.text.length;
+        message_input.forceActiveFocus();
+    }
 }

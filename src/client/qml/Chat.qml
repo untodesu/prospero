@@ -39,4 +39,8 @@ ColumnLayout {
     function clear() {
         chat_messages.model.clear();
     }
+
+    function set_input_text(text) {
+        chat_input.set_text(text);
+    }
 }

@@ -3,7 +3,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
 Rectangle {
-    readonly property color hover_color: palette.midlight
+    readonly property color hover_color: palette.mid
     readonly property color normal_color: "transparent"
 
     property var timestamp
