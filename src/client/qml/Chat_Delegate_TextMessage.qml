@@ -28,7 +28,7 @@ Rectangle {
             Layout.fillWidth: false
             Layout.fillHeight: true
 
-            font.family: g_monospace.family
+            font.family: g_roboto_mono_font.family
             font.pointSize: 10
 
             opacity: 0.5
@@ -42,21 +42,27 @@ Rectangle {
             selectByMouse: true
 
             color: palette.text
+
+            visible: g_settings.show_timestamps
         }
 
         Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: false
+
             color: palette.text
             opacity: 0.25
+
             width: 2
+
+            visible: g_settings.show_timestamps
         }
 
         TextEdit {
             Layout.fillWidth: false
             Layout.fillHeight: true
 
-            font.family: g_monospace.family
+            font.family: g_roboto_mono_font.family
             font.pointSize: 11
 
             text: username
@@ -75,8 +81,10 @@ Rectangle {
         Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: false
+
             color: palette.text
             opacity: 0.25
+
             width: 2
         }
 
@@ -85,8 +93,9 @@ Rectangle {
 
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Layout.minimumHeight: actions_button.height
 
-            font.family: g_monospace.family
+            font.family: g_roboto_mono_font.family
             font.pointSize: 11
 
             text: message
@@ -100,29 +109,48 @@ Rectangle {
             wrapMode: TextEdit.WrapAtWordBoundaryOrAnywhere
 
             color: palette.windowText
+        }
 
-            MouseArea {
-                anchors.fill: parent
+        Button {
+            id: actions_button
 
-                acceptedButtons: Qt.LeftButton
+            Layout.fillWidth: false
+            Layout.fillHeight: false
+            Layout.preferredWidth: implicitHeight
+            Layout.alignment: Qt.AlignTop
 
-                cursorShape: Qt.IBeamCursor
-                
-                onClicked: function(mouse) {
-                    if(mouse.modifiers & Qt.ShiftModifier) {
-                        let reply_lines = [];
-    
-                        const lines = message.split("\n");
-    
-                        for(let i = 0; i < lines.length; i++) {
-                            reply_lines.push("> " + lines[i]);
-                        }
-    
-                        reply_lines.push("");
+            text: "\u21A9" // Unicode Leftwards Arrow with Hook
 
-                        reply_lines.push("@" + username + " ");
-    
-                        chat.set_input_text(reply_lines.join("\n"));
+            opacity: hover_handler.hovered && g_session.is_connected ? 1.0 : 0.0
+
+            onClicked: {
+                actions_menu.open();
+                actions_menu.x = -actions_menu.implicitWidth - 4;
+            }
+
+            Menu {
+                id: actions_menu
+
+                Action {
+                    text: qsTr("Reply")
+
+                    onTriggered: {
+                        chat.clear_input_text();
+                        chat.append_input_text(`@${username} `);
+                        chat.focus_input();
+                    }
+                }
+
+                Action {
+                    text: qsTr("Quote && Reply")
+
+                    onTriggered: {
+                        const quoted_message = message.split('\n').map(line => (`> ${line}`)).join('\n');
+
+                        chat.clear_input_text();
+                        chat.append_input_text(quoted_message + '\n');
+                        chat.append_input_text(`@${username} `);
+                        chat.focus_input();
                     }
                 }
             }
@@ -131,16 +159,7 @@ Rectangle {
         Highlighter {
             target: content_text.textDocument
 
-            mention_color: {
-                if(palette.window.hslLightness < 0.5) {
-                    return "#00CCFF";
-                }
-                else {
-                    return "#333399";
-                }
-            }
-
-            quotation_color: {
+            quote_color: {
                 if(palette.window.hslLightness < 0.5) {
                     return "#80FF80";
                 }
@@ -152,10 +171,25 @@ Rectangle {
     }
 
     HoverHandler {
+        id: hover_handler
+
         enabled: g_session.is_connected
 
         onHoveredChanged: {
-            parent.color = hovered ? parent.hover_color : parent.normal_color;
+            if(hovered || actions_menu.visible) {
+                parent.color = parent.hover_color;
+            }
+            else {
+                parent.color = parent.normal_color;
+            }
+        }
+    }
+
+    Connections {
+        target: actions_menu
+
+        function onClosed() {
+            hover_handler.hoveredChanged();
         }
     }
 }

@@ -10,7 +10,7 @@ Rectangle {
     property string message
 
     width: parent ? parent.width : implicitWidth
-    height: 4 + message_layout.implicitHeight
+    height: 10 + message_layout.implicitHeight
 
     color: normal_color
 
@@ -27,7 +27,7 @@ Rectangle {
             Layout.fillWidth: false
             Layout.fillHeight: true
 
-            font.family: g_monospace.family
+            font.family: g_roboto_mono_font.family
             font.pointSize: 10
 
             opacity: 0.5
@@ -41,14 +41,20 @@ Rectangle {
             selectByMouse: true
 
             color: palette.text
+
+            visible: g_settings.show_timestamps
         }
 
         Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: false
+            
             color: palette.text
             opacity: 0.25
+            
             width: 2
+
+            visible: g_settings.show_timestamps
         }
 
         TextEdit {
@@ -59,7 +65,7 @@ Rectangle {
 
             text: message
 
-            font.family: g_monospace.family
+            font.family: g_roboto_mono_font.family
             font.pointSize: 11
 
             opacity: 0.5

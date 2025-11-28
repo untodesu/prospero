@@ -162,6 +162,8 @@ void Session::perform_connection(ENetAddress address)
                     return;
                 }
             }
+
+            QCoreApplication::processEvents();
         }
     }
 

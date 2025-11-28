@@ -10,8 +10,7 @@
 class Highlighter : public QSyntaxHighlighter {
     Q_OBJECT
     Q_PROPERTY(QQuickTextDocument* target READ target WRITE set_target)
-    Q_PROPERTY(QColor mention_color READ mention_color WRITE set_mention_color)
-    Q_PROPERTY(QColor quotation_color READ quotation_color WRITE set_quotation_color)
+    Q_PROPERTY(QColor quote_color READ quote_color WRITE set_quote_color)
 
 public:
     explicit Highlighter(QObject* parent = nullptr);
@@ -22,17 +21,14 @@ public:
     QQuickTextDocument* target(void) const;
     void set_target(QQuickTextDocument* target);
 
-    const QColor& mention_color(void) const;
-    void set_mention_color(const QColor& color);
-
-    const QColor& quotation_color(void) const;
-    void set_quotation_color(const QColor& color);
+    const QColor& quote_color(void) const;
+    void set_quote_color(const QColor& color);
 
 private:
-    QTextCharFormat m_quotation_format;
+    QTextCharFormat m_quote_format;
     QTextCharFormat m_mention_format;
 
-    QRegularExpression m_quotation_pattern;
+    QRegularExpression m_quote_pattern;
     QRegularExpression m_mention_pattern;
 };
 

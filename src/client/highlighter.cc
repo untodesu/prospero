@@ -11,29 +11,36 @@
 
 Highlighter::Highlighter(QObject* parent) : QSyntaxHighlighter(parent)
 {
+    m_mention_format.setFontUnderline(true);
+    m_mention_format.setFontWeight(QFont::Bold);
+
+    m_quote_format.setFontWeight(QFont::Normal);
+
     m_mention_pattern.setPattern("@[a-zA-Z0-9_\\-\\.]+");
-    m_quotation_pattern.setPattern("^\\s*>.*$");
+    m_quote_pattern.setPattern("^\\s*>.*$");
 }
 
 void Highlighter::highlightBlock(const QString& text)
 {
     QRegularExpressionMatchIterator mention_iterator(m_mention_pattern.globalMatch(text));
-    QRegularExpressionMatchIterator quotation_iterator(m_quotation_pattern.globalMatch(text));
+    QRegularExpressionMatchIterator quote_iterator(m_quote_pattern.globalMatch(text));
 
     while(mention_iterator.hasNext()) {
         QRegularExpressionMatch match(mention_iterator.next());
         setFormat(match.capturedStart(), match.capturedLength(), m_mention_format);
     }
 
-    while(quotation_iterator.hasNext()) {
-        QRegularExpressionMatch match(quotation_iterator.next());
-        setFormat(match.capturedStart(), match.capturedLength(), m_quotation_format);
+    while(quote_iterator.hasNext()) {
+        QRegularExpressionMatch match(quote_iterator.next());
+        setFormat(match.capturedStart(), match.capturedLength(), m_quote_format);
     }
 }
 
 QQuickTextDocument* Highlighter::target(void) const
 {
-    return qobject_cast<QQuickTextDocument*>(document());
+    auto document = this->document();
+    auto parent = document ? document->parent() : nullptr;
+    return qobject_cast<QQuickTextDocument*>(parent);
 }
 
 void Highlighter::set_target(QQuickTextDocument* target)
@@ -41,26 +48,14 @@ void Highlighter::set_target(QQuickTextDocument* target)
     setDocument(target ? target->textDocument() : nullptr);
 }
 
-const QColor& Highlighter::mention_color(void) const
+const QColor& Highlighter::quote_color(void) const
 {
-    return m_mention_format.foreground().color();
+    return m_quote_format.foreground().color();
 }
 
-void Highlighter::set_mention_color(const QColor& color)
+void Highlighter::set_quote_color(const QColor& color)
 {
-    m_mention_format.setForeground(color);
-
-    rehighlight();
-}
-
-const QColor& Highlighter::quotation_color(void) const
-{
-    return m_quotation_format.foreground().color();
-}
-
-void Highlighter::set_quotation_color(const QColor& color)
-{
-    m_quotation_format.setForeground(color);
+    m_quote_format.setForeground(color);
 
     rehighlight();
 }

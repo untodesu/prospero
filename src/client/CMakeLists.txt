@@ -36,8 +36,8 @@ target_link_libraries(prospero PRIVATE core enet)
 
 target_precompile_headers(prospero PRIVATE "${CMAKE_CURRENT_LIST_DIR}/precompiled.hh")
 
-set_target_properties(prospero PROPERTIES WIN32_EXECUTABLE TRUE)
-set_target_properties(prospero PROPERTIES MACOSX_BUNDLE TRUE)
+# set_target_properties(prospero PROPERTIES WIN32_EXECUTABLE TRUE)
+# set_target_properties(prospero PROPERTIES MACOSX_BUNDLE TRUE)
 
 file(GLOB_RECURSE qml_files CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/qml/*.qml")
 list(TRANSFORM qml_files REPLACE "${CMAKE_CURRENT_LIST_DIR}/" "")

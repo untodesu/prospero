@@ -23,6 +23,23 @@ Menu {
     MenuSeparator {}
 
     Action {
+        text: qsTr("Show Timestamps")
+
+        checkable: true
+
+        checked: g_settings.show_timestamps
+
+        onTriggered: {
+            g_settings.show_timestamps = checked;
+        }
+
+        Accessible.name: qsTr("Show Timestamps")
+        Accessible.description: qsTr("Toggles the display of timestamps in chat messages")
+    }
+
+    MenuSeparator {}
+
+    Action {
         text: qsTr("Mute Messages")
 
         checkable: true

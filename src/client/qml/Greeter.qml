@@ -84,6 +84,7 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: false
 
+                        font.pointSize: 12
                         font.bold: true
 
                         horizontalAlignment: Text.AlignHCenter
@@ -96,7 +97,7 @@ Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: false
 
-                        font.family: g_monospace.family
+                        font.family: g_roboto_mono_font.family
                         font.pointSize: 8
 
                         horizontalAlignment: Text.AlignHCenter
@@ -140,7 +141,7 @@ Rectangle {
 
                     text: g_settings.username
 
-                    font.family: g_monospace.family
+                    font.family: g_roboto_mono_font.family
 
                     onTextChanged: {
                         g_settings.username = text;
@@ -175,7 +176,7 @@ Rectangle {
 
                         text: g_settings.public_key.substring(0, 24) + "..."
 
-                        font.family: g_monospace.family
+                        font.family: g_roboto_mono_font.family
 
                         readOnly: true
                         selectByMouse: true
@@ -247,7 +248,7 @@ Rectangle {
                     readonly property color normal_color: "transparent"
 
                     width: parent ? parent.width : implicitWidth
-                    height: 8 + font.pixelSize
+                    height: 16 + font.pixelSize
 
                     color: normal_color
 
@@ -259,7 +260,7 @@ Rectangle {
                         anchors.fill: parent
                         anchors.margins: 4
 
-                        font.family: g_monospace.family
+                        font.family: g_roboto_mono_font.family
                         font.pointSize: 11
 
                         verticalAlignment: Text.AlignVCenter
@@ -329,7 +330,7 @@ Rectangle {
 
                     placeholderText: qsTr("Host address...")
 
-                    font.family: g_monospace.family
+                    font.family: g_roboto_mono_font.family
 
                     focus: true
 

@@ -19,8 +19,8 @@ RowLayout {
 
         Layout.fillWidth: true
         Layout.fillHeight: true
-        Layout.minimumHeight: g_monospace.pixelSize * 2
-        Layout.maximumHeight: g_monospace.pixelSize * 5
+        Layout.minimumHeight: g_roboto_mono_font.pixelSize * 2
+        Layout.maximumHeight: g_roboto_mono_font.pixelSize * 5
 
         TextArea {
             id: message_input
@@ -31,7 +31,7 @@ RowLayout {
 
             focus: true
 
-            font.family: g_monospace.family
+            font.family: g_roboto_mono_font.family
 
             placeholderText: qsTr("Type a message...")
 
@@ -71,7 +71,7 @@ RowLayout {
         Layout.preferredWidth: height
         Layout.alignment: Qt.AlignTop
 
-        height: g_monospace.pixelSize * 2
+        height: g_roboto_mono_font.pixelSize * 2
 
         text: "\u25B6" // Unicode black right-pointing triangle
 
@@ -89,9 +89,18 @@ RowLayout {
         Accessible.description: qsTr("Button to send the typed message")
     }
 
-    function set_text(text) {
-        message_input.text = text;
+    Keys.forwardTo: [message_input]
+
+    function clear_text() {
+        message_input.clear();
+    }
+
+    function append_text(text) {
+        message_input.text += text;
         message_input.cursorPosition = message_input.text.length;
+    }
+
+    function focus_input() {
         message_input.forceActiveFocus();
     }
 }

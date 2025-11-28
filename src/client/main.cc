@@ -31,10 +31,10 @@ int main(int argc, char** argv)
             throw core::runtime_error("enet_initialize failed");
         }
 
-        auto roboto_regular_id = QFontDatabase::addApplicationFont(":/res/fonts/Roboto-Medium.ttf");
-        auto roboto_mono_id = QFontDatabase::addApplicationFont(":/res/fonts/RobotoMono-Medium.ttf");
+        auto roboto_id = QFontDatabase::addApplicationFont(":/res/fonts/Roboto.ttf");
+        auto roboto_mono_id = QFontDatabase::addApplicationFont(":/res/fonts/RobotoMono.ttf");
 
-        if(roboto_regular_id < 0 || roboto_mono_id < 0) {
+        if(roboto_id < 0 || roboto_mono_id < 0) {
             throw core::runtime_error("font loading failed");
         }
 
@@ -42,13 +42,16 @@ int main(int argc, char** argv)
 
         QQuickStyle::setStyle("Fusion");
 
-        QFont roboto_regular_font(QFontDatabase::applicationFontFamilies(roboto_regular_id).constFirst());
+        QFont roboto_font(QFontDatabase::applicationFontFamilies(roboto_id).constFirst());
         QFont roboto_mono_font(QFontDatabase::applicationFontFamilies(roboto_mono_id).constFirst());
 
-        roboto_regular_font.setPointSize(11);
-        roboto_mono_font.setPointSize(11);
+        roboto_font.setPointSize(11);
+        roboto_font.setWeight(QFont::Light);
 
-        app.setFont(roboto_regular_font);
+        roboto_mono_font.setPointSize(11);
+        roboto_mono_font.setWeight(QFont::Light);
+
+        app.setFont(roboto_font);
 
         qmlRegisterType<Highlighter>("ProsperoChat", 1, 0, "Highlighter");
 
@@ -70,7 +73,8 @@ int main(int argc, char** argv)
         context->setContextProperty("g_session", Session::instance);
         context->setContextProperty("g_version", Version::instance);
 
-        context->setContextProperty("g_monospace", roboto_mono_font);
+        context->setContextProperty("g_roboto_font", roboto_font);
+        context->setContextProperty("g_roboto_mono_font", roboto_mono_font);
 
         qml->load(QUrl(QStringLiteral("qrc:/qml/MainWindow.qml")));
 

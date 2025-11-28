@@ -42,6 +42,22 @@ void Settings::set_minimize_on_close(bool minimize)
     }
 }
 
+bool Settings::show_timestamps(void) const
+{
+    return m_show_timestamps;
+}
+
+void Settings::set_show_timestamps(bool show)
+{
+    if(m_show_timestamps != show) {
+        m_show_timestamps = show;
+
+        emit show_timestamps_changed();
+
+        save_to_config();
+    }
+}
+
 bool Settings::mute_messages(void) const
 {
     return m_mute_messages;
@@ -121,6 +137,8 @@ void Settings::load_from_config(void)
 
     m_minimize_on_close = config.value<bool>("minimize_on_close", true);
 
+    m_show_timestamps = config.value<bool>("show_timestamps", true);
+
     m_mute_messages = config.value<bool>("mute_messages", false);
     m_mute_mentions = config.value<bool>("mute_mentions", false);
 
@@ -147,6 +165,8 @@ void Settings::save_to_config(void)
     Config config;
 
     config.set_value<bool>("minimize_on_close", m_minimize_on_close);
+
+    config.set_value<bool>("show_timestamps", m_show_timestamps);
 
     config.set_value<bool>("mute_messages", m_mute_messages);
     config.set_value<bool>("mute_mentions", m_mute_mentions);

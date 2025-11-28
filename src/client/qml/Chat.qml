@@ -36,11 +36,21 @@ ColumnLayout {
         id: chat_input
     }
 
+    Keys.forwardTo: [chat_input]
+
     function clear() {
         chat_messages.model.clear();
     }
 
-    function set_input_text(text) {
-        chat_input.set_text(text);
+    function clear_input_text() {
+        chat_input.clear_text();
+    }
+
+    function append_input_text(text) {
+        chat_input.append_text(text);
+    }
+
+    function focus_input() {
+        chat_input.focus_input();
     }
 }
