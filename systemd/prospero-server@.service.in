@@ -8,19 +8,18 @@ Type=simple
 User=nobody
 Group=nogroup
 
-ExecStartPre=+/usr/bin/mkdir -p ${INSTALL_SYSCONFDIR}/prospero/%i
-ExecStartPre=+/usr/bin/mkdir -p ${INSTALL_SYSCONFDIR}/prospero/%i
-ExecStartPre=+/usr/bin/chown nobody:nogroup ${INSTALL_SYSCONFDIR}/prospero/%i
-ExecStartPre=+/usr/bin/chown nobody:nogroup ${INSTALL_SYSCONFDIR}/prospero/%i
+ConfigurationDirectory=prospero/%i
+RuntimeDirectory=prospero/%i
+StateDirectory=prospero/%i
 
-ExecStart=${INSTALL_BINDIR}/prospero-server ${INSTALL_SYSCONFDIR}/prospero/%i
+ExecStart=${INSTALL_BINDIR}/prospero-server /etc/prospero/%i
 WorkingDirectory=/var/lib/prospero/%i
 
 Restart=on-failure
 RestartSec=5s
 
 ProtectSystem=full
-ReadWritePaths=${INSTALL_SYSCONFDIR}/prospero/%i
+ReadWritePaths=/etc/prospero/%i
 ProtectHome=yes
 
 [Install]
