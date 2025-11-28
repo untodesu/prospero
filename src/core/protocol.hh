@@ -67,7 +67,8 @@ struct Notification final : public BasePacket<PacketType::Notification> {
 
     std::uint64_t timestamp {};
     std::uint32_t type {};
-    std::string text;
+    std::string text_1;
+    std::string text_2;
 };
 
 struct TextMessage final : public BasePacket<PacketType::TextMessage> {

@@ -19,21 +19,17 @@ static void cmd_help(Session* sender, const std::vector<std::string_view>& argum
     assert(sender);
     assert(sender->aes_context);
 
-    constexpr static std::array<std::string_view, NUM_COMMAND_GROUPS> group_names = { "general", "irc-like", "admin", "root" };
-
     if(arguments.empty()) {
         std::ostringstream stream;
+        auto first_in_list = true;
 
         for(std::size_t i = 0U; i < NUM_COMMAND_GROUPS; ++i) {
-            auto first_in_group = true;
-
             for(const auto& it : commands::groups[i]) {
-                if(first_in_group) {
-                    first_in_group = false;
+                if(!first_in_list)
                     stream << std::endl;
-                }
+                first_in_list = false;
 
-                stream << std::format("- [{}] {}", group_names[i], it.first);
+                stream << std::format("- {}", it.first);
             }
         }
 
@@ -44,14 +40,14 @@ static void cmd_help(Session* sender, const std::vector<std::string_view>& argum
             for(const auto& it : commands::groups[i]) {
                 if(it.first == arguments[0]) {
                     const auto& usage = it.second.second;
-                    const auto& group_name = group_names[i];
+
                     std::string message;
 
                     if(usage.empty()) {
-                        message = std::format("[{}] usage: {}", group_name, it.first);
+                        message = std::format("usage: {}", it.first);
                     }
                     else {
-                        message = std::format("[{}] usage: {} {}", group_name, it.first, usage);
+                        message = std::format("usage: {} {}", it.first, usage);
                     }
 
                     sessions::send_notification(sender, Notification::T_TEXT_MESG, message);

@@ -62,7 +62,7 @@ void send_packet(Session* session, const TextMessage& packet);
 
 namespace sessions
 {
-void send_notification(Session* session, std::uint32_t type, std::string_view text);
+void send_notification(Session* session, std::uint32_t type, std::string_view text_1, std::string_view text_2 = {});
 } // namespace sessions
 
 namespace sessions
@@ -73,7 +73,7 @@ void broadcast_packet(const TextMessage& packet);
 
 namespace sessions
 {
-void broadcast_notification(std::uint32_t type, std::string_view text);
+void broadcast_notification(std::uint32_t type, std::string_view text_1, std::string_view text_2 = {});
 } // namespace sessions
 
 #endif

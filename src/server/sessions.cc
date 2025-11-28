@@ -327,7 +327,7 @@ void sessions::send_packet(Session* session, const TextMessage& packet)
     enet_peer_send(session->peer, 0U, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
-void sessions::send_notification(Session* session, std::uint32_t type, std::string_view text)
+void sessions::send_notification(Session* session, std::uint32_t type, std::string_view text_1, std::string_view text_2)
 {
     assert(session);
     assert(session->aes_context);
@@ -336,7 +336,8 @@ void sessions::send_notification(Session* session, std::uint32_t type, std::stri
 
     packet.timestamp = unixtime::milliseconds();
     packet.type = type;
-    packet.text = text;
+    packet.text_1 = text_1;
+    packet.text_2 = text_2;
 
     send_packet(session, packet);
 }
@@ -359,13 +360,14 @@ void sessions::broadcast_packet(const TextMessage& packet)
     }
 }
 
-void sessions::broadcast_notification(std::uint32_t type, std::string_view text)
+void sessions::broadcast_notification(std::uint32_t type, std::string_view text_1, std::string_view text_2)
 {
     thread_local Notification packet;
 
     packet.timestamp = unixtime::milliseconds();
     packet.type = type;
-    packet.text = text;
+    packet.text_1 = text_1;
+    packet.text_2 = text_2;
 
     broadcast_packet(packet);
 }

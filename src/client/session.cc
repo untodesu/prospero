@@ -129,9 +129,9 @@ void Session::add_notification_text_mesg(const QDateTime& timestamp, const QStri
     emit notification_received(timestamp, message);
 }
 
-void Session::add_notification_user_away(const QDateTime& timestamp, const QString& username)
+void Session::add_notification_user_away(const QDateTime& timestamp, const QString& username, const QString& away_message)
 {
-    emit notification_received(timestamp, tr("%1 is now away").arg(username));
+    emit notification_received(timestamp, tr("%1 is now away: %2").arg(username).arg(away_message));
 }
 
 void Session::add_notification_user_back(const QDateTime& timestamp, const QString& username)
@@ -346,31 +346,32 @@ void Session::handle_notification(const Notification& packet)
     assert(m_aes_context);
 
     auto timestamp = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(packet.timestamp), QTimeZone::UTC);
-    auto text = QString::fromStdString(packet.text);
+    auto text_1 = QString::fromStdString(packet.text_1);
+    auto text_2 = QString::fromStdString(packet.text_2);
 
     switch(packet.type) {
         case Notification::T_PEER_JOIN:
-            add_notification_peer_join(timestamp, text);
+            add_notification_peer_join(timestamp, text_1);
             break;
 
         case Notification::T_PEER_LEFT:
-            add_notification_peer_left(timestamp, text);
+            add_notification_peer_left(timestamp, text_1);
             break;
 
         case Notification::T_TEXT_MESG:
-            add_notification_text_mesg(timestamp, text);
+            add_notification_text_mesg(timestamp, text_1);
             break;
 
         case Notification::T_USER_AWAY:
-            add_notification_user_away(timestamp, text);
+            add_notification_user_away(timestamp, text_1, text_2);
             break;
 
         case Notification::T_USER_BACK:
-            add_notification_user_back(timestamp, text);
+            add_notification_user_back(timestamp, text_1);
             break;
 
         case Notification::T_MODR_KICK:
-            add_notification_modr_kick(timestamp, text);
+            add_notification_modr_kick(timestamp, text_1);
             break;
 
         default:

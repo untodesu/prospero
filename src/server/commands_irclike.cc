@@ -20,6 +20,10 @@ static void cmd_away(Session* sender, const std::vector<std::string_view>& argum
     assert(sender->aes_context);
 
     if(arguments.empty()) {
+        if(sender->away_message.empty()) {
+            throw core::invalid_argument("missing argument");
+        }
+
         sender->away_message.clear();
         sessions::broadcast_notification(Notification::T_USER_BACK, sender->username);
         return;
@@ -34,7 +38,8 @@ static void cmd_away(Session* sender, const std::vector<std::string_view>& argum
     }
 
     sender->away_message = stream.str();
-    sessions::broadcast_notification(Notification::T_USER_AWAY, sender->username);
+
+    sessions::broadcast_notification(Notification::T_USER_AWAY, sender->username, sender->away_message);
 }
 
 static void cmd_me(Session* sender, const std::vector<std::string_view>& arguments)

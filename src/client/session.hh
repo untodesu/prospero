@@ -39,7 +39,7 @@ public:
     Q_INVOKABLE void add_notification_peer_join(const QDateTime& timestamp, const QString& username);
     Q_INVOKABLE void add_notification_peer_left(const QDateTime& timestamp, const QString& username);
     Q_INVOKABLE void add_notification_text_mesg(const QDateTime& timestamp, const QString& message);
-    Q_INVOKABLE void add_notification_user_away(const QDateTime& timestamp, const QString& username);
+    Q_INVOKABLE void add_notification_user_away(const QDateTime& timestamp, const QString& username, const QString& away_message);
     Q_INVOKABLE void add_notification_user_back(const QDateTime& timestamp, const QString& username);
     Q_INVOKABLE void add_notification_modr_kick(const QDateTime& timestamp, const QString& username);
 
