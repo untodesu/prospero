@@ -7,13 +7,14 @@ Wants=network.target
 Type=simple
 User=nobody
 Group=nogroup
-ExecStart=/usr/local/bin/prospero-server /usr/local/etc/prospero/%i
+
+ExecStart=${INSTALL_BINDIR}/prospero-server ${INSTALL_SYSCONFDIR}/prospero/%i
 WorkingDirectory=/var/lib/prospero/%i
 Restart=on-failure
 RestartSec=5s
 
 ProtectSystem=full
-ReadWritePaths=/usr/local/etc/prospero/%i
+ReadWritePaths=${INSTALL_SYSCONFDIR}/prospero/%i
 ProtectHome=yes
 
 [Install]
