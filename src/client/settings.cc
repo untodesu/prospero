@@ -36,22 +36,6 @@ QString Settings::theme(void) const
     return QQuickStyle::name();
 }
 
-bool Settings::clear_on_disconnect(void) const
-{
-    return m_clear_on_disconnect;
-}
-
-void Settings::set_clear_on_disconnect(bool clear)
-{
-    if(m_clear_on_disconnect != clear) {
-        m_clear_on_disconnect = clear;
-
-        emit clear_on_disconnect_changed();
-
-        save_to_config();
-    }
-}
-
 bool Settings::hide_on_close(void) const
 {
     return m_hide_on_close;
@@ -149,8 +133,6 @@ void Settings::load_from_config(void)
 
     m_language = QString::fromStdString(std::string(config.value<std::string_view>("language", std::string_view())));
 
-    m_clear_on_disconnect = config.value<bool>("clear_on_disconnect", true);
-
     m_hide_on_close = config.value<bool>("hide_on_close", true);
 
     m_mute_messages = config.value<bool>("mute_messages", false);
@@ -186,8 +168,6 @@ void Settings::save_to_config(void)
         // if the user _needs_ to force a specific language, they can set it in the config
         config.set_value<std::string_view>("language", m_language.toStdString());
     }
-
-    config.set_value<bool>("clear_on_disconnect", m_clear_on_disconnect);
 
     config.set_value<bool>("hide_on_close", m_hide_on_close);
 

@@ -169,27 +169,42 @@
         <translation>%1 отключился от сервера</translation>
     </message>
     <message>
-        <location filename="../session.cc" line="173"/>
+        <location filename="../session.cc" line="134"/>
+        <source>%1 is now away: %2</source>
+        <translation>%1 отошёл: %2</translation>
+    </message>
+    <message>
+        <location filename="../session.cc" line="139"/>
+        <source>%1 is no longer away</source>
+        <translation>%1 вернулся</translation>
+    </message>
+    <message>
+        <location filename="../session.cc" line="144"/>
+        <source>%1 has been kicked</source>
+        <translation>%1 был кикнут</translation>
+    </message>
+    <message>
+        <location filename="../session.cc" line="188"/>
         <source>Failed to connect to the server</source>
         <translation>Не удалось подключиться к серверу</translation>
     </message>
     <message>
-        <location filename="../session.cc" line="191"/>
+        <location filename="../session.cc" line="206"/>
         <source>Disconnected from server</source>
         <translation>Соединение с сервером прервано</translation>
     </message>
     <message>
-        <location filename="../session.cc" line="276"/>
+        <location filename="../session.cc" line="291"/>
         <source>Outdated client! Server runs on %1</source>
         <translation>Устаревший клиент! Сервер работает на версии %1</translation>
     </message>
     <message>
-        <location filename="../session.cc" line="283"/>
+        <location filename="../session.cc" line="298"/>
         <source>Outdated server! Server runs on %1</source>
         <translation>Устаревший сервер! Сервер работает на версии %1</translation>
     </message>
     <message>
-        <location filename="../session.cc" line="294"/>
+        <location filename="../session.cc" line="309"/>
         <source>Potentially incompatible versions [SV %1 // CL %2]</source>
         <translation>Потенциально несовместимые версии [SV %1 // CL %2]</translation>
     </message>

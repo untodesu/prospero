@@ -12,18 +12,6 @@ Menu {
         }
     }
 
-    Action {
-        text: qsTr("Clear on Disconnect")
-
-        checkable: true
-
-        checked: g_settings.clear_on_disconnect
-
-        onTriggered: {
-            g_settings.clear_on_disconnect = checked;
-        }
-    }
-
     MenuSeparator {}
 
     Action {

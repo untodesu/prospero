@@ -13,7 +13,6 @@ class Settings final : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString theme READ theme CONSTANT)
     Q_PROPERTY(QString language READ language CONSTANT)
-    Q_PROPERTY(bool clear_on_disconnect READ clear_on_disconnect WRITE set_clear_on_disconnect NOTIFY clear_on_disconnect_changed)
     Q_PROPERTY(bool hide_on_close READ hide_on_close WRITE set_hide_on_close NOTIFY hide_on_close_changed)
     Q_PROPERTY(bool mute_messages READ mute_messages WRITE set_mute_messages NOTIFY mute_messages_changed)
     Q_PROPERTY(bool mute_mentions READ mute_mentions WRITE set_mute_mentions NOTIFY mute_mentions_changed)
@@ -29,9 +28,6 @@ public:
     QString theme(void) const;
 
     const QString& language(void) const;
-
-    bool clear_on_disconnect(void) const;
-    void set_clear_on_disconnect(bool clear);
 
     bool hide_on_close(void) const;
     void set_hide_on_close(bool hide);
@@ -50,7 +46,6 @@ public:
     const ed25519::skey_buffer& private_key_buffer(void) const;
 
 signals:
-    void clear_on_disconnect_changed(void);
     void hide_on_close_changed(void);
     void mute_messages_changed(void);
     void mute_mentions_changed(void);
@@ -63,8 +58,6 @@ private:
     std::filesystem::path m_config_path;
 
     QString m_language;
-
-    bool m_clear_on_disconnect;
 
     bool m_hide_on_close;
 

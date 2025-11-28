@@ -169,27 +169,42 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../session.cc" line="173"/>
+        <location filename="../session.cc" line="134"/>
+        <source>%1 is now away: %2</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../session.cc" line="139"/>
+        <source>%1 is no longer away</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../session.cc" line="144"/>
+        <source>%1 has been kicked</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../session.cc" line="188"/>
         <source>Failed to connect to the server</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../session.cc" line="191"/>
+        <location filename="../session.cc" line="206"/>
         <source>Disconnected from server</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../session.cc" line="276"/>
+        <location filename="../session.cc" line="291"/>
         <source>Outdated client! Server runs on %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../session.cc" line="283"/>
+        <location filename="../session.cc" line="298"/>
         <source>Outdated server! Server runs on %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../session.cc" line="294"/>
+        <location filename="../session.cc" line="309"/>
         <source>Potentially incompatible versions [SV %1 // CL %2]</source>
         <translation></translation>
     </message>
