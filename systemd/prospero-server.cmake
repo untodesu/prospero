@@ -7,5 +7,5 @@ set(INSTALL_BINDIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
 set(INSTALL_SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}")
 
 configure_file("${CMAKE_CURRENT_LIST_DIR}/prospero-server@.service.in" "${PROJECT_BINARY_DIR}/generated.prospero-server@.service")
-install(FILES "${PROJECT_BINARY_DIR}/generated.prospero-server@service" DESTINATION "lib/systemd/system" RENAME "prospero-server@.service")
-install(DIRECTORY DESTINATION "${CMAKE_INSTALL_SYSCONFDIR}/prospero")
+file(INSTALL "${PROJECT_BINARY_DIR}/generated.prospero-server@.service" DESTINATION "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/systemd/system" RENAME "prospero-server@.service")
+file(MAKE_DIRECTORY "$ENV{DESTDIR}${CMAKE_INSTALL_SYSCONFDIR}/prospero")
