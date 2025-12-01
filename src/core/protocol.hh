@@ -18,7 +18,7 @@ enum class PacketType : std::uint32_t {
     AuthResponse,
     AuthResult,
     Notification,
-    TextMessage,
+    BasicMessage,
 };
 
 template<PacketType Type>
@@ -71,12 +71,12 @@ struct Notification final : public BasePacket<PacketType::Notification> {
     std::string text_2;
 };
 
-struct TextMessage final : public BasePacket<PacketType::TextMessage> {
+struct BasicMessage final : public BasePacket<PacketType::BasicMessage> {
     constexpr static std::size_t MAX_USERNAME_LENGTH = 96U;
-    constexpr static std::size_t MAX_MESSAGE_LENGTH = 32768U;
+    constexpr static std::size_t MAX_MESSAGE_LENGTH = 16U << 20U; // 16 MiB
 
-    static void deserialize(aes256::context& context, ReadBuffer& buffer, TextMessage& packet);
-    static void serialize(aes256::context& context, WriteBuffer& buffer, const TextMessage& packet);
+    static void deserialize(aes256::context& context, ReadBuffer& buffer, BasicMessage& packet);
+    static void serialize(aes256::context& context, WriteBuffer& buffer, const BasicMessage& packet);
 
     std::uint64_t timestamp {};
     std::string username;

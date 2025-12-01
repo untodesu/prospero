@@ -73,7 +73,7 @@ void Notification::serialize(aes256::context& context, WriteBuffer& buffer, cons
     buffer.write(WriteBuffer::encrypt(context, payload));
 }
 
-void TextMessage::deserialize(aes256::context& context, ReadBuffer& buffer, TextMessage& packet)
+void BasicMessage::deserialize(aes256::context& context, ReadBuffer& buffer, BasicMessage& packet)
 {
     auto payload = ReadBuffer::decrypt(context, buffer);
     packet.timestamp = payload.read<std::uint64_t>();
@@ -81,7 +81,7 @@ void TextMessage::deserialize(aes256::context& context, ReadBuffer& buffer, Text
     packet.message = payload.read<std::string>();
 }
 
-void TextMessage::serialize(aes256::context& context, WriteBuffer& buffer, const TextMessage& packet)
+void BasicMessage::serialize(aes256::context& context, WriteBuffer& buffer, const BasicMessage& packet)
 {
     WriteBuffer payload;
     payload.write<std::uint64_t>(packet.timestamp);

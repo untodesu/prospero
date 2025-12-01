@@ -4,6 +4,10 @@ import QtQuick.Layouts 1.15
 import QtQml.Models
 
 ListView {
+    readonly property int message_type_notification: 0
+    readonly property int message_type_text: 1
+    readonly property int message_type_image: 2
+
     id: chat_messages
 
     Layout.fillWidth: true
@@ -22,10 +26,10 @@ ListView {
     }
 
     delegate: DelegateChooser {
-        role: "is_notification"
+        role: "message_type"
 
         DelegateChoice {
-            roleValue: true
+            roleValue: chat_messages.message_type_notification
 
             Chat_Delegate_Notification {
                 timestamp: model.timestamp
@@ -34,12 +38,22 @@ ListView {
         }
 
         DelegateChoice {
-            roleValue: false
+            roleValue: chat_messages.message_type_text
 
             Chat_Delegate_TextMessage {
                 timestamp: model.timestamp
                 username: model.username
                 message: model.message
+            }
+        }
+
+        DelegateChoice {
+            roleValue: chat_messages.message_type_image
+
+            Chat_Delegate_Image {
+                timestamp: model.timestamp
+                username: model.username
+                data_url: model.message
             }
         }
     }
@@ -49,7 +63,7 @@ ListView {
 
         function onNotification_received(timestamp, message) {
             chat_model.append({
-                is_notification: true,
+                message_type: chat_messages.message_type_notification,
                 username: qsTr("System Message"),
                 timestamp: timestamp,
                 message: message
@@ -60,10 +74,21 @@ ListView {
 
         function onText_message_received(timestamp, username, message) {
             chat_model.append({
-                is_notification: false,
+                message_type: chat_messages.message_type_text,
                 username: username,
                 timestamp: timestamp,
                 message: message
+            });
+
+            chat_messages.positionViewAtEnd();
+        }
+
+        function onImage_message_received(timestamp, username, data_url) {
+            chat_model.append({
+                message_type: chat_messages.message_type_image,
+                username: username,
+                timestamp: timestamp,
+                message: data_url
             });
 
             chat_messages.positionViewAtEnd();

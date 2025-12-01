@@ -150,15 +150,15 @@ void Session::send_text_message(const QString& message)
     assert(m_aes_context);
 
     thread_local WriteBuffer buffer;
-    thread_local TextMessage packet;
+    thread_local BasicMessage packet;
 
     packet.timestamp = UINT64_MAX; ///< UINT64_MAX when server-bound
     packet.username.clear();       ///< empty when server-bound
     packet.message = message.toStdString();
 
     buffer.reset();
-    buffer.write<std::uint32_t>(TextMessage::ID);
-    TextMessage::serialize(m_aes_context, buffer, packet);
+    buffer.write<std::uint32_t>(BasicMessage::ID);
+    BasicMessage::serialize(m_aes_context, buffer, packet);
 
     enet_peer_send(m_server, 0U, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
@@ -230,7 +230,7 @@ void Session::handle_packet(const ENetPacket* packet)
     thread_local AuthRequest auth_request;
     thread_local AuthResult auth_result;
     thread_local Notification notification;
-    thread_local TextMessage text_message;
+    thread_local BasicMessage text_message;
 
     buffer.reset(packet->data, packet->dataLength);
 
@@ -267,9 +267,9 @@ void Session::handle_packet(const ENetPacket* packet)
                 handle_notification(notification);
                 break;
 
-            case TextMessage::ID:
-                TextMessage::deserialize(m_aes_context, buffer, text_message);
-                handle_text_message(text_message);
+            case BasicMessage::ID:
+                BasicMessage::deserialize(m_aes_context, buffer, text_message);
+                handle_basic_message(text_message);
                 break;
 
             default:
@@ -380,13 +380,28 @@ void Session::handle_notification(const Notification& packet)
     }
 }
 
-void Session::handle_text_message(const TextMessage& packet)
+void Session::handle_basic_message(const BasicMessage& packet)
 {
     assert(m_aes_context);
 
     auto timestamp = QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(packet.timestamp), QTimeZone::UTC);
-    auto username = QString::fromStdString(packet.username.substr(0U, TextMessage::MAX_USERNAME_LENGTH));
-    auto message = QString::fromStdString(packet.message.substr(0U, TextMessage::MAX_MESSAGE_LENGTH));
+    auto username = QString::fromStdString(packet.username.substr(0U, BasicMessage::MAX_USERNAME_LENGTH));
+    auto message = QString::fromStdString(packet.message.substr(0U, BasicMessage::MAX_MESSAGE_LENGTH));
+
+    if(message.startsWith("data:")) {
+        auto mimetype_end = message.indexOf(',');
+
+        if(mimetype_end >= 0) {
+            constexpr std::size_t header_end = 5U;
+
+            auto mimetype = message.mid(header_end, mimetype_end - header_end);
+
+            if(mimetype.startsWith("image/")) {
+                emit image_message_received(timestamp, username, message);
+                return;
+            }
+        }
+    }
 
     emit text_message_received(timestamp, username, message);
 }

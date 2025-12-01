@@ -12,7 +12,7 @@
 struct AuthRequest;
 struct AuthResult;
 struct Notification;
-struct TextMessage;
+struct BasicMessage;
 
 class Session final : public QObject {
     Q_OBJECT
@@ -48,8 +48,10 @@ public:
 signals:
     void connection_changed(void);
     void connection_started(void);
+
     void notification_received(const QDateTime& timestamp, const QString& message);
     void text_message_received(const QDateTime& timestamp, const QString& username, const QString& message);
+    void image_message_received(const QDateTime& timestamp, const QString& username, const QString& data_url);
 
     void address_resolved(ENetAddress address);
 
@@ -65,7 +67,7 @@ private:
     void handle_auth_request(const AuthRequest& packet);
     void handle_auth_result(const AuthResult& packet);
     void handle_notification(const Notification& packet);
-    void handle_text_message(const TextMessage& packet);
+    void handle_basic_message(const BasicMessage& packet);
 
     ENetHost* m_host;
     QTimer* m_host_timer;

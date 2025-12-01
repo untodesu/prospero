@@ -13,7 +13,7 @@
 struct AuthRequest;
 struct AuthResult;
 struct Notification;
-struct TextMessage;
+struct BasicMessage;
 
 struct Session final {
     ENetPeer* peer { nullptr };
@@ -57,7 +57,7 @@ namespace sessions
 void send_packet(Session* session, const AuthRequest& packet);
 void send_packet(Session* session, const AuthResult& packet);
 void send_packet(Session* session, const Notification& packet);
-void send_packet(Session* session, const TextMessage& packet);
+void send_packet(Session* session, const BasicMessage& packet);
 } // namespace sessions
 
 namespace sessions
@@ -68,7 +68,7 @@ void send_notification(Session* session, std::uint32_t type, std::string_view te
 namespace sessions
 {
 void broadcast_packet(const Notification& packet);
-void broadcast_packet(const TextMessage& packet);
+void broadcast_packet(const BasicMessage& packet);
 } // namespace sessions
 
 namespace sessions
