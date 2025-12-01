@@ -69,8 +69,4 @@ ListView {
             chat_messages.positionViewAtEnd();
         }
     }
-
-    function clear() {
-        chat_model.clear();
-    }
 }

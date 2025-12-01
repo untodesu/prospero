@@ -20,7 +20,7 @@ RowLayout {
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.minimumHeight: g_roboto_mono_font.pixelSize * 2
-        Layout.maximumHeight: g_roboto_mono_font.pixelSize * 5
+        Layout.maximumHeight: g_roboto_mono_font.pixelSize * 6
 
         TextArea {
             id: message_input
@@ -49,6 +49,10 @@ RowLayout {
 
             horizontalAlignment: TextArea.AlignLeft
             verticalAlignment: TextArea.AlignVCenter
+
+            onTextChanged: {
+                message_input.forceActiveFocus();
+            }
         }
 
         ScrollBar.vertical.policy: ScrollBar.AsNeeded
@@ -64,9 +68,8 @@ RowLayout {
         id: send_message
 
         Layout.fillWidth: false
-        Layout.fillHeight: false
-        Layout.preferredWidth: height
-        Layout.alignment: Qt.AlignTop
+        Layout.fillHeight: true
+        Layout.preferredWidth: g_roboto_mono_font.pixelSize * 2
 
         height: g_roboto_mono_font.pixelSize * 2
 

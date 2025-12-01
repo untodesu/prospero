@@ -5,12 +5,22 @@ import QtQuick.Layouts 1.15
 import ProsperoChat 1.0
 
 Rectangle {
-    readonly property color hover_color: palette.mid
     readonly property color normal_color: "transparent"
+
+    property color hover_color
 
     property var timestamp
     property string username
     property string message
+
+    hover_color: {
+        if(palette.window.hslLightness < 0.5) {
+            return palette.mid;
+        }
+        else {
+            return palette.midlight;
+        }
+    }
 
     width: parent ? parent.width : implicitWidth
     height: 6 + message_layout.implicitHeight
@@ -27,30 +37,28 @@ Rectangle {
         TextEdit {
             Layout.fillWidth: false
             Layout.fillHeight: true
+            Layout.minimumWidth: g_roboto_mono_font.pixelSize * 4
 
             font.family: g_roboto_mono_font.family
             font.italic: true
             font.pointSize: 8
 
-            opacity: 0.25
+            color: Qt.rgba(palette.text.r, palette.text.g, palette.text.b, 0.25)
 
             text: Qt.formatDateTime(timestamp, "hh:mm:ss")
 
             horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
+            verticalAlignment: message.split('\n').length > 1 ? Text.AlignTop : Text.AlignVCenter
 
             readOnly: true
             selectByMouse: true
-
-            color: palette.text
         }
 
         Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: false
 
-            color: palette.text
-            opacity: 0.125
+            color: Qt.rgba(palette.text.r, palette.text.g, palette.text.b, 0.125)
 
             width: 1
         }
@@ -64,23 +72,20 @@ Rectangle {
 
             text: username
 
-            opacity: 0.5
-
             horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
+            verticalAlignment: message.split('\n').length > 1 ? Text.AlignTop : Text.AlignVCenter
 
             readOnly: true
             selectByMouse: true
 
-            color: palette.text
+            color: Qt.rgba(palette.text.r, palette.text.g, palette.text.b, 0.5)
         }
 
         Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: false
 
-            color: palette.text
-            opacity: 0.125
+            color: Qt.rgba(palette.text.r, palette.text.g, palette.text.b, 0.125)
 
             width: 1
         }
@@ -98,7 +103,7 @@ Rectangle {
             text: message
 
             horizontalAlignment: Text.AlignLeft
-            verticalAlignment: Text.AlignVCenter
+            verticalAlignment: message.split('\n').length > 1 ? Text.AlignTop : Text.AlignVCenter
 
             readOnly: true
             selectByMouse: true
@@ -116,7 +121,7 @@ Rectangle {
             Layout.preferredWidth: implicitHeight
             Layout.alignment: Qt.AlignTop
 
-            text: "\u21A9" // Unicode Leftwards Arrow with Hook
+            text: "\u25BE" // Unicode Black Down-Pointing Small Triangle
 
             opacity: hover_handler.hovered && g_session.is_connected ? 1.0 : 0.0
 
@@ -134,7 +139,6 @@ Rectangle {
                     onTriggered: {
                         chat.clear_input_text();
                         chat.append_input_text(`@${username} `);
-                        chat.focus_input();
                     }
                 }
 
@@ -147,7 +151,28 @@ Rectangle {
                         chat.clear_input_text();
                         chat.append_input_text(quoted_message + '\n');
                         chat.append_input_text(`@${username} `);
-                        chat.focus_input();
+                    }
+                }
+
+                MenuSeparator {}
+
+                Action {
+                    text: qsTr("Copy Text")
+
+                    onTriggered: {
+                        g_clipboard.set_text(message);
+                    }
+                }
+
+                MenuSeparator {}
+
+                Action {
+                    text: qsTr("Copy Full Message")
+
+                    onTriggered: {
+                        const timestamp_string = Qt.formatDateTime(timestamp, "yyyy-MM-dd hh:mm:ss");
+                        const full_message = `[${timestamp_string}] ${username}: ${message}`;
+                        g_clipboard.set_text(full_message);
                     }
                 }
             }

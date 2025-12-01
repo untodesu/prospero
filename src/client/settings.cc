@@ -36,6 +36,20 @@ QString Settings::theme(void) const
     return QQuickStyle::name();
 }
 
+bool Settings::logging_enabled(void) const
+{
+    return m_logging_enabled;
+}
+
+void Settings::set_logging_enabled(bool enabled)
+{
+    if(m_logging_enabled != enabled) {
+        m_logging_enabled = enabled;
+        emit logging_enabled_changed();
+        save_to_config();
+    }
+}
+
 bool Settings::hide_on_close(void) const
 {
     return m_hide_on_close;

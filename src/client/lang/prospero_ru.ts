@@ -4,14 +4,24 @@
 <context>
     <name>Chat_Delegate_TextMessage</name>
     <message>
-        <location filename="../qml/Chat_Delegate_TextMessage.qml" line="132"/>
+        <location filename="../qml/Chat_Delegate_TextMessage.qml" line="137"/>
         <source>Reply</source>
         <translation>Ответить</translation>
     </message>
     <message>
-        <location filename="../qml/Chat_Delegate_TextMessage.qml" line="142"/>
+        <location filename="../qml/Chat_Delegate_TextMessage.qml" line="146"/>
         <source>Quote &amp;&amp; Reply</source>
         <translation>Ответить с Цитатой</translation>
+    </message>
+    <message>
+        <location filename="../qml/Chat_Delegate_TextMessage.qml" line="160"/>
+        <source>Copy Text</source>
+        <translation>Копировать Текст</translation>
+    </message>
+    <message>
+        <location filename="../qml/Chat_Delegate_TextMessage.qml" line="170"/>
+        <source>Copy Full Message</source>
+        <translation>Копировать Сообщение</translation>
     </message>
 </context>
 <context>
@@ -22,7 +32,7 @@
         <translation>Текст сообщения...</translation>
     </message>
     <message>
-        <location filename="../qml/Chat_Input.qml" line="85"/>
+        <location filename="../qml/Chat_Input.qml" line="88"/>
         <source>Send Message</source>
         <translation>Отправить Сообщение</translation>
     </message>
@@ -38,47 +48,47 @@
 <context>
     <name>Greeter</name>
     <message>
-        <location filename="../qml/Greeter.qml" line="82"/>
+        <location filename="../qml/Greeter.qml" line="85"/>
         <source>Prospero Client</source>
         <translation>Клиент Prospero</translation>
     </message>
     <message>
-        <location filename="../qml/Greeter.qml" line="132"/>
+        <location filename="../qml/Greeter.qml" line="135"/>
         <source>Username:</source>
         <translation>Имя пользователя:</translation>
     </message>
     <message>
-        <location filename="../qml/Greeter.qml" line="159"/>
+        <location filename="../qml/Greeter.qml" line="162"/>
         <source>Desired username sent to Prospero servers upon connection</source>
         <translation>Предпочтительное имя пользователя, отправляемое на серверы Prospero при установке соединения</translation>
     </message>
     <message>
-        <location filename="../qml/Greeter.qml" line="166"/>
+        <location filename="../qml/Greeter.qml" line="169"/>
         <source>Identity:</source>
         <translation>Идентификатор:</translation>
     </message>
     <message>
-        <location filename="../qml/Greeter.qml" line="191"/>
+        <location filename="../qml/Greeter.qml" line="194"/>
         <source>An Ed25519 public key used for authentication and encryption with Prospero servers</source>
         <translation>Публичный ключ Ed25519, используемый для аутентификации и шифрования при обмене данных с серверами Prospero</translation>
     </message>
     <message>
-        <location filename="../qml/Greeter.qml" line="198"/>
+        <location filename="../qml/Greeter.qml" line="201"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../qml/Greeter.qml" line="257"/>
+        <location filename="../qml/Greeter.qml" line="281"/>
         <source>[%1] %2</source>
         <translation>[%1] %2</translation>
     </message>
     <message>
-        <location filename="../qml/Greeter.qml" line="330"/>
+        <location filename="../qml/Greeter.qml" line="354"/>
         <source>Host address...</source>
         <translation>Адрес сервера...</translation>
     </message>
     <message>
-        <location filename="../qml/Greeter.qml" line="359"/>
+        <location filename="../qml/Greeter.qml" line="383"/>
         <source>Connect</source>
         <translation>Подключиться</translation>
     </message>

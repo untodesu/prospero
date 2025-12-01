@@ -59,6 +59,8 @@ private:
 
     QString m_language;
 
+    bool m_logging_enabled;
+
     bool m_hide_on_close;
 
     bool m_mute_messages;

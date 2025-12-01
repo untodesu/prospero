@@ -31,6 +31,9 @@ Rectangle {
                     logo_image.playing = false;
                 }
             }
+            else {
+                chat.focus_input();
+            }
         }
     }
 
@@ -242,9 +245,30 @@ Rectangle {
                 }
 
                 delegate: Rectangle {
-                    readonly property color click_color: palette.mid
-                    readonly property color hover_color: palette.midlight
                     readonly property color normal_color: "transparent"
+
+                    property color click_color
+                    property color hover_color
+
+                    id: server_entry
+
+                    click_color: {
+                        if(palette.window.hslLightness < 0.5) {
+                            return palette.midlight;
+                        }
+                        else {
+                            return palette.light;
+                        }
+                    }
+
+                    hover_color: {
+                        if(palette.window.hslLightness < 0.5) {
+                            return palette.mid;
+                        }
+                        else {
+                            return palette.midlight;
+                        }
+                    }
 
                     width: parent ? parent.width : implicitWidth
                     height: 16 + font.pixelSize

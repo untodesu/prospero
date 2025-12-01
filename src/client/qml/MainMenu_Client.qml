@@ -12,8 +12,6 @@ Menu {
 
         onTriggered: {
             g_session.disconnect_from_host();
-
-            chat.clear();
         }
     }
 

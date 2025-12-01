@@ -38,10 +38,6 @@ ColumnLayout {
 
     Keys.forwardTo: [chat_input]
 
-    function clear() {
-        chat_messages.model.clear();
-    }
-
     function clear_input_text() {
         chat_input.clear_text();
     }
