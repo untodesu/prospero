@@ -56,6 +56,10 @@ ListView {
                 timestamp: model.timestamp
                 username: model.username
                 source_url: model.payload
+
+                onFinished_loading: {
+                    chat_messages.positionViewAtEnd();
+                }
             }
         }
     }

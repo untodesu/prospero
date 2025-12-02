@@ -13,6 +13,8 @@ Rectangle {
     property string username
     property string source_url
 
+    signal finished_loading()
+
     hover_color: {
         if(palette.window.hslLightness < 0.5) {
             return palette.mid;
@@ -103,6 +105,14 @@ Rectangle {
             fillMode: Image.Stretch
 
             source: source_url
+
+            onStatusChanged: {
+                console.log(content_image.status);
+
+                if(content_image.status === Image.Ready) {
+                    finished_loading();
+                }
+            }
         }
 
         Rectangle {
