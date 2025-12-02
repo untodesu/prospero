@@ -73,7 +73,7 @@ void Notification::serialize(aes256::context& context, WriteBuffer& buffer, cons
     buffer.write(WriteBuffer::encrypt(context, payload));
 }
 
-void BasicMessage::deserialize(aes256::context& context, ReadBuffer& buffer, BasicMessage& packet)
+void TextMessage::deserialize(aes256::context& context, ReadBuffer& buffer, TextMessage& packet)
 {
     auto payload = ReadBuffer::decrypt(context, buffer);
     packet.timestamp = payload.read<std::uint64_t>();
@@ -81,12 +81,30 @@ void BasicMessage::deserialize(aes256::context& context, ReadBuffer& buffer, Bas
     packet.message = payload.read<std::string>();
 }
 
-void BasicMessage::serialize(aes256::context& context, WriteBuffer& buffer, const BasicMessage& packet)
+void TextMessage::serialize(aes256::context& context, WriteBuffer& buffer, const TextMessage& packet)
 {
     WriteBuffer payload;
     payload.write<std::uint64_t>(packet.timestamp);
     payload.write<std::string_view>(packet.username.substr(0U, MAX_USERNAME_LENGTH));
     payload.write<std::string_view>(packet.message.substr(0U, MAX_MESSAGE_LENGTH));
+
+    buffer.write(WriteBuffer::encrypt(context, payload));
+}
+
+void ImageMessage::deserialize(aes256::context& context, ReadBuffer& buffer, ImageMessage& packet)
+{
+    auto payload = ReadBuffer::decrypt(context, buffer);
+    packet.timestamp = payload.read<std::uint64_t>();
+    packet.username = payload.read<std::string>();
+    packet.source = payload.read<std::string>();
+}
+
+void ImageMessage::serialize(aes256::context& context, WriteBuffer& buffer, const ImageMessage& packet)
+{
+    WriteBuffer payload;
+    payload.write<std::uint64_t>(packet.timestamp);
+    payload.write<std::string_view>(packet.username.substr(0U, MAX_USERNAME_LENGTH));
+    payload.write<std::string_view>(packet.source);
 
     buffer.write(WriteBuffer::encrypt(context, payload));
 }

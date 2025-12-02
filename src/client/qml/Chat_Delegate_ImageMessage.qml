@@ -2,6 +2,7 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
+import ProsperoChat 1.0
 
 Rectangle {
     readonly property color normal_color: "transparent"
@@ -10,7 +11,7 @@ Rectangle {
 
     property var timestamp
     property string username
-    property string data_url
+    property string source_url
 
     hover_color: {
         if(palette.window.hslLightness < 0.5) {
@@ -90,17 +91,24 @@ Rectangle {
         }
 
         AnimatedImage {
-            id: content_data
+            id: content_image
 
-            Layout.fillWidth: true
+            Layout.fillWidth: false
             Layout.fillHeight: false
+            Layout.alignment: Qt.AlignTop
 
-            fillMode: Image.PreserveAspectFit
+            Layout.maximumWidth: Math.min(640, 0.5 * parent.width)
+            Layout.maximumHeight: Layout.maximumWidth * (implicitHeight / implicitWidth)
 
-            source: {
-                console.log(data_url);
-                return data_url;
-            }
+            fillMode: Image.Stretch
+
+            source: source_url
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            color: "transparent"
         }
 
         Button {
@@ -129,16 +137,6 @@ Rectangle {
                     onTriggered: {
                         chat.clear_input_text();
                         chat.append_input_text(`@${username} `);
-                    }
-                }
-
-                MenuSeparator {}
-
-                Action {
-                    text: qsTr("Copy Image")
-
-                    onTriggered: {
-                        g_clipboard.set_text(data_url);
                     }
                 }
             }

@@ -113,7 +113,7 @@ static bool authenticate_session(Session* session, const AuthResponse& packet)
     return authenticated;
 }
 
-static void handle_text_message(Session* session, const BasicMessage& packet)
+static void handle_text_message(Session* session, const TextMessage& packet)
 {
     assert(session);
     assert(session->aes_context);
@@ -123,7 +123,7 @@ static void handle_text_message(Session* session, const BasicMessage& packet)
         return;
     }
 
-    thread_local BasicMessage text_message;
+    thread_local TextMessage text_message;
     text_message.timestamp = unixtime::milliseconds();
     text_message.username = session->username;
     text_message.message = packet.message;
@@ -208,7 +208,7 @@ void sessions::update(ENetPeer* peer, const ENetPacket* packet)
 
     thread_local ReadBuffer buffer;
     thread_local AuthResponse auth_response;
-    thread_local BasicMessage text_message;
+    thread_local TextMessage text_message;
 
     if(auto session = lookup(peer)) {
         buffer.reset(packet->data, packet->dataLength);
@@ -240,8 +240,8 @@ void sessions::update(ENetPeer* peer, const ENetPacket* packet)
 
         if(session->aes_context) {
             switch(packet_type) {
-                case BasicMessage::ID:
-                    BasicMessage::deserialize(session->aes_context, buffer, text_message);
+                case TextMessage::ID:
+                    TextMessage::deserialize(session->aes_context, buffer, text_message);
                     handle_text_message(session, text_message);
                     break;
             }
@@ -313,7 +313,7 @@ void sessions::send_packet(Session* session, const Notification& packet)
     enet_peer_send(session->peer, 0U, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
 
-void sessions::send_packet(Session* session, const BasicMessage& packet)
+void sessions::send_packet(Session* session, const TextMessage& packet)
 {
     assert(session);
     assert(session->aes_context);
@@ -321,8 +321,22 @@ void sessions::send_packet(Session* session, const BasicMessage& packet)
     thread_local WriteBuffer buffer;
 
     buffer.reset();
-    buffer.write<std::uint32_t>(BasicMessage::ID);
-    BasicMessage::serialize(session->aes_context, buffer, packet);
+    buffer.write<std::uint32_t>(TextMessage::ID);
+    TextMessage::serialize(session->aes_context, buffer, packet);
+
+    enet_peer_send(session->peer, 0U, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
+}
+
+void sessions::send_packet(Session* session, const ImageMessage& packet)
+{
+    assert(session);
+    assert(session->aes_context);
+
+    thread_local WriteBuffer buffer;
+
+    buffer.reset();
+    buffer.write<std::uint32_t>(ImageMessage::ID);
+    ImageMessage::serialize(session->aes_context, buffer, packet);
 
     enet_peer_send(session->peer, 0U, enet_packet_create(buffer.data(), buffer.size(), ENET_PACKET_FLAG_RELIABLE));
 }
@@ -351,7 +365,16 @@ void sessions::broadcast_packet(const Notification& packet)
     }
 }
 
-void sessions::broadcast_packet(const BasicMessage& packet)
+void sessions::broadcast_packet(const TextMessage& packet)
+{
+    for(auto& session : vector) {
+        if(session.peer && session.aes_context) {
+            send_packet(&session, packet);
+        }
+    }
+}
+
+void sessions::broadcast_packet(const ImageMessage& packet)
 {
     for(auto& session : vector) {
         if(session.peer && session.aes_context) {

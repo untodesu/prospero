@@ -10,6 +10,8 @@
 #include "core/aes256.hh"
 #include "core/ed25519.hh"
 
+constexpr static std::size_t MAX_USERNAME_LENGTH = 96U;
+
 class ReadBuffer;
 class WriteBuffer;
 
@@ -18,7 +20,8 @@ enum class PacketType : std::uint32_t {
     AuthResponse,
     AuthResult,
     Notification,
-    BasicMessage,
+    TextMessage,
+    ImageMessage,
 };
 
 template<PacketType Type>
@@ -71,16 +74,22 @@ struct Notification final : public BasePacket<PacketType::Notification> {
     std::string text_2;
 };
 
-struct BasicMessage final : public BasePacket<PacketType::BasicMessage> {
-    constexpr static std::size_t MAX_USERNAME_LENGTH = 96U;
-    constexpr static std::size_t MAX_MESSAGE_LENGTH = 16U << 20U; // 16 MiB
-
-    static void deserialize(aes256::context& context, ReadBuffer& buffer, BasicMessage& packet);
-    static void serialize(aes256::context& context, WriteBuffer& buffer, const BasicMessage& packet);
+struct TextMessage final : public BasePacket<PacketType::TextMessage> {
+    static void deserialize(aes256::context& context, ReadBuffer& buffer, TextMessage& packet);
+    static void serialize(aes256::context& context, WriteBuffer& buffer, const TextMessage& packet);
 
     std::uint64_t timestamp {};
     std::string username;
     std::string message;
+};
+
+struct ImageMessage final : public BasePacket<PacketType::ImageMessage> {
+    static void deserialize(aes256::context& context, ReadBuffer& buffer, ImageMessage& packet);
+    static void serialize(aes256::context& context, WriteBuffer& buffer, const ImageMessage& packet);
+
+    std::uint64_t timestamp {};
+    std::string username;
+    std::string source;
 };
 
 #endif

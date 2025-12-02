@@ -76,10 +76,8 @@ RowLayout {
         text: "\u25B6" // Unicode black right-pointing triangle
 
         onClicked: {
-            let message = message_input.text.trim();
-
-            if (message.length > 0 && g_session.is_authenticated) {
-                message_sent(message);
+            if (message_input.text.trim().length > 0 && g_session.is_authenticated) {
+                message_sent(message_input.text); // send untrimmed message
                 message_input.focus = true;
                 message_input.clear();
             }

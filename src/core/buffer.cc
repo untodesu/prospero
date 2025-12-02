@@ -174,7 +174,7 @@ template<>
 std::string ReadBuffer::read<std::string>(void)
 {
     std::string result;
-    result.resize(read<std::uint32_t>());
+    result.resize(read<std::uint16_t>());
 
     for(std::size_t i = 0; i < result.size(); ++i) {
         if(m_position < m_vector.size()) {
@@ -323,7 +323,7 @@ void WriteBuffer::write(const std::int64_t value)
 template<>
 void WriteBuffer::write<std::string_view>(const std::string_view value)
 {
-    write<std::uint32_t>(static_cast<std::uint32_t>(value.size()));
+    write<std::uint16_t>(static_cast<std::uint16_t>(std::min<std::size_t>(UINT16_MAX, value.size())));
 
     for(const auto& character : value) {
         m_vector.push_back(static_cast<std::byte>(character));

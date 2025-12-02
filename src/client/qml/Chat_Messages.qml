@@ -13,6 +13,8 @@ ListView {
     Layout.fillWidth: true
     Layout.fillHeight: true
 
+    contentWidth: parent === null ? -1 : parent.width
+
     spacing: 0
 
     clip: true
@@ -33,7 +35,7 @@ ListView {
 
             Chat_Delegate_Notification {
                 timestamp: model.timestamp
-                message: model.message
+                message: model.payload
             }
         }
 
@@ -43,17 +45,17 @@ ListView {
             Chat_Delegate_TextMessage {
                 timestamp: model.timestamp
                 username: model.username
-                message: model.message
+                message: model.payload
             }
         }
 
         DelegateChoice {
             roleValue: chat_messages.message_type_image
 
-            Chat_Delegate_Image {
+            Chat_Delegate_ImageMessage {
                 timestamp: model.timestamp
                 username: model.username
-                data_url: model.message
+                source_url: model.payload
             }
         }
     }
@@ -66,7 +68,7 @@ ListView {
                 message_type: chat_messages.message_type_notification,
                 username: qsTr("System Message"),
                 timestamp: timestamp,
-                message: message
+                payload: message
             });
 
             chat_messages.positionViewAtEnd();
@@ -77,18 +79,20 @@ ListView {
                 message_type: chat_messages.message_type_text,
                 username: username,
                 timestamp: timestamp,
-                message: message
+                payload: message
             });
 
             chat_messages.positionViewAtEnd();
         }
 
-        function onImage_message_received(timestamp, username, data_url) {
+        function onImage_message_received(timestamp, username, source) {
+            console.log(source);
+
             chat_model.append({
                 message_type: chat_messages.message_type_image,
                 username: username,
                 timestamp: timestamp,
-                message: data_url
+                payload: source
             });
 
             chat_messages.positionViewAtEnd();
