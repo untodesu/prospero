@@ -86,8 +86,6 @@ ListView {
         }
 
         function onImage_message_received(timestamp, username, source) {
-            console.log(source);
-
             chat_model.append({
                 message_type: chat_messages.message_type_image,
                 username: username,
