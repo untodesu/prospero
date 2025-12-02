@@ -86,7 +86,7 @@ void TextMessage::serialize(aes256::context& context, WriteBuffer& buffer, const
     WriteBuffer payload;
     payload.write<std::uint64_t>(packet.timestamp);
     payload.write<std::string_view>(packet.username.substr(0U, MAX_USERNAME_LENGTH));
-    payload.write<std::string_view>(packet.message.substr(0U, MAX_MESSAGE_LENGTH));
+    payload.write<std::string_view>(packet.message);
 
     buffer.write(WriteBuffer::encrypt(context, payload));
 }
