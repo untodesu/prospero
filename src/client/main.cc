@@ -17,9 +17,9 @@
 
 int main(int argc, char** argv)
 {
-    try {
-        QApplication app(argc, argv);
+    QApplication app(argc, argv);
 
+    try {
         if(IPC::ensure_single_instance()) {
             qDebug() << "Waking up existing instance";
             return EXIT_SUCCESS;
