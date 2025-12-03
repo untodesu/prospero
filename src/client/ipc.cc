@@ -39,7 +39,7 @@ IPC::IPC(QObject* parent) : QObject(parent)
     m_server = new QLocalServer(this);
 
     if(!m_server->listen(IPC::SERVER_NAME)) {
-        throw core::runtime_error("unable to start IPC server");
+        throw core::runtime_error("unable to start IPC server: {}", m_server->errorString().toStdString());
     }
 
     connect(m_server, &QLocalServer::newConnection, this, &IPC::add_connection);
